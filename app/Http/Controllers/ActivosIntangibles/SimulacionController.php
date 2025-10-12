@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -21,7 +21,7 @@ class SimulacionController extends Controller
         return Proyecto::query()
             ->where('liquidado', 0)
             ->orderBy('Nombre')
-            ->get(['ID_Proyecto','Nombre']);
+            ->get(['ID_Proyecto', 'Nombre']);
     }
 
     /**
@@ -45,7 +45,7 @@ class SimulacionController extends Controller
         // (inversion2.Proyecto guarda el nombre). Conservamos esa compatibilidad.
         $inversiones = Inversion::query()
             ->where('Proyecto', $proyecto->Nombre)
-            ->get(['Nombre','Monto','FK_ID_Tipo','Fecha']);
+            ->get(['Nombre', 'Monto', 'FK_ID_Tipo', 'Fecha']);
 
         // Acumulados
         $porUsuario = [];  // 'Nombre' => ['Capital'=>x, 'Industria'=>y]
@@ -64,10 +64,10 @@ class SimulacionController extends Controller
 
             $nombreUsr = $inv->Nombre ?: 'Desconocido';
             if (!isset($porUsuario[$nombreUsr])) {
-                $porUsuario[$nombreUsr] = ['Capital'=>0.0, 'Industria'=>0.0];
+                $porUsuario[$nombreUsr] = ['Capital' => 0.0, 'Industria' => 0.0];
             }
 
-            if (in_array((int)$inv->FK_ID_Tipo, [1,2], true)) {
+            if (in_array((int)$inv->FK_ID_Tipo, [1, 2], true)) {
                 $porUsuario[$nombreUsr]['Capital'] += $vf;
                 $capital += $vf;
             } elseif ((int)$inv->FK_ID_Tipo === 3) {
@@ -109,7 +109,7 @@ class SimulacionController extends Controller
             ->select('FK_ID_Tipo', DB::raw('COALESCE(SUM(Monto),0) as total'))
             ->where('Proyecto', $proyecto->Nombre)
             ->groupBy('FK_ID_Tipo')
-            ->pluck('total','FK_ID_Tipo');
+            ->pluck('total', 'FK_ID_Tipo');
 
         $montoTipo1 = (float)($sumTipo[1] ?? 0);
         $montoTipo2 = (float)($sumTipo[2] ?? 0);
@@ -130,16 +130,16 @@ class SimulacionController extends Controller
         foreach ($rawMensual as $row) {
             $mes  = (int)$row->Mes;
             $tipo = (int)$row->FK_ID_Tipo;
-            if (in_array($tipo, [1,2], true)) {
+            if (in_array($tipo, [1, 2], true)) {
                 $capitalMes[$mes] += (float)$row->TotalMonto;
             } elseif ($tipo === 3) {
                 $industriaMes[$mes] += (float)$row->TotalMonto;
             }
         }
-        $labelsMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        $labelsMes = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
         // Serie para barras de % por usuario (ordenada desc)
-        usort($tabla, fn($a,$b) => $b['Porcentaje'] <=> $a['Porcentaje']);
+        usort($tabla, fn($a, $b) => $b['Porcentaje'] <=> $a['Porcentaje']);
         $serieUsuarios = [
             'labels' => array_column($tabla, 'Nombre'),
             'data'   => array_map(fn($row) => $row['Porcentaje'], $tabla),
@@ -157,7 +157,7 @@ class SimulacionController extends Controller
                 'monto_tipo2'            => round($montoTipo2),
                 'monto_tipo3'            => round($montoTipo3),
                 'valor_aportes_capital'  => round($capital),
-                'valor_aportes_industria'=> round($industria),
+                'valor_aportes_industria' => round($industria),
                 'total_aportes'          => round($totalAportes),
                 'participacion_minima'   => round($minPct, 2),
                 'participacion_maxima'   => round($maxPct, 2),
@@ -165,14 +165,14 @@ class SimulacionController extends Controller
             ],
             'series' => [
                 'aportes_donut' => [
-                    'labels' => ['Capital (tipos 1+2)','Industria (tipo 3)'],
+                    'labels' => ['Capital (tipos 1+2)', 'Industria (tipo 3)'],
                     'data'   => [round($capital), round($industria)],
                 ],
                 'usuarios_porcentaje' => $serieUsuarios,
                 'mensual' => [
                     'labels'   => $labelsMes,
                     'capital'  => array_values($capitalMes),
-                    'industria'=> array_values($industriaMes),
+                    'industria' => array_values($industriaMes),
                     'year'     => $year,
                 ],
             ],

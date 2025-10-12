@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -65,7 +65,7 @@ class VinculacionController extends Controller
                 ->where('FK_ID_Proyecto', $data['proyecto'])
                 ->delete();
 
-            $rows = array_map(fn ($uid) => [
+            $rows = array_map(fn($uid) => [
                 'FK_ID_Proyecto' => $data['proyecto'],
                 'FK_ID_Usuario'  => $uid,
             ], $data['usuarios']);

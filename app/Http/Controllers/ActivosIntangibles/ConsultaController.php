@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -85,7 +85,7 @@ class ConsultaController extends Controller
                 ->where('FK_ID_Usuario', $usuarioId)
                 ->where('FK_ID_Tipo', $tipo)
                 ->orderBy('Fecha')
-                ->get(['ID_Inversion','Fecha','Monto']);
+                ->get(['ID_Inversion', 'Fecha', 'Monto']);
 
             $items = [];
             $total = 0;
@@ -93,7 +93,7 @@ class ConsultaController extends Controller
             foreach ($rows as $row) {
                 $fecha = Carbon::parse($row->Fecha);
                 $dias  = $fecha->diffInDays($hoy);
-                $valor = round($row->Monto * pow(1 + ($tasaAjustada/100), $dias/365), 0);
+                $valor = round($row->Monto * pow(1 + ($tasaAjustada / 100), $dias / 365), 0);
 
                 $items[] = [
                     'id'                 => $row->ID_Inversion,
@@ -145,23 +145,23 @@ class ConsultaController extends Controller
     {
         $term = $r->get('q');
 
-        $proyectos = Proyecto::where('Nombre','like',"%{$term}%")
-            ->limit(10)->get(['ID_Proyecto as id','Nombre']);
+        $proyectos = Proyecto::where('Nombre', 'like', "%{$term}%")
+            ->limit(10)->get(['ID_Proyecto as id', 'Nombre']);
 
         // Si no tienes tabla empresas, comenta este bloque:
         $empresas = DB::table('empresas')
-            ->where('Nombre','like',"%{$term}%")
-            ->limit(10)->get(['id','Nombre']);
+            ->where('Nombre', 'like', "%{$term}%")
+            ->limit(10)->get(['id', 'Nombre']);
 
-        $inversiones = Inversion::where('Monto','>=', (float)($r->get('monto_min', 0)))
-            ->limit(10)->get(['ID_Inversion as id','Monto']);
+        $inversiones = Inversion::where('Monto', '>=', (float)($r->get('monto_min', 0)))
+            ->limit(10)->get(['ID_Inversion as id', 'Monto']);
 
-        return compact('proyectos','empresas','inversiones');
+        return compact('proyectos', 'empresas', 'inversiones');
     }
-      public function proyectosNoLiquidados()
+    public function proyectosNoLiquidados()
     {
         return DB::table('proyecto')
-            ->select('ID_Proyecto','Nombre','Fecha','Descripcion','Certificado')
+            ->select('ID_Proyecto', 'Nombre', 'Fecha', 'Descripcion', 'Certificado')
             ->where('liquidado', '<>', 1)
             ->orderBy('Nombre')
             ->get();
@@ -170,8 +170,8 @@ class ConsultaController extends Controller
     public function usuariosParaVincular()
     {
         return DB::table('usuario2')
-            ->select('ID_Usuario','Nombre','Apellido','Telefono','Correo','FK_ID_Rol')
-            ->where('FK_ID_Rol','<>',1)
+            ->select('ID_Usuario', 'Nombre', 'Apellido', 'Telefono', 'Correo', 'FK_ID_Rol')
+            ->where('FK_ID_Rol', '<>', 1)
             ->orderBy('Nombre')
             ->get();
     }

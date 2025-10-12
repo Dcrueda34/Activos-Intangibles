@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Departamento;
@@ -19,7 +19,7 @@ class DepartamentoController extends Controller
         }
 
         if ($r->filled('search')) {
-            $q->where('Nombre', 'like', '%'.$r->input('search').'%');
+            $q->where('Nombre', 'like', '%' . $r->input('search') . '%');
         }
 
         return $q->orderBy('Nombre')->paginate(20);

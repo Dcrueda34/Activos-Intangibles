@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ubicacion;
@@ -10,7 +10,7 @@ class UbicacionController extends Controller
 {
     public function index(Request $r)
     {
-        $q = Ubicacion::query()->with(['pais:id,nombre','departamento:id,nombre,pais_id','municipio:id,nombre,departamento_id']);
+        $q = Ubicacion::query()->with(['pais:id,nombre', 'departamento:id,nombre,pais_id', 'municipio:id,nombre,departamento_id']);
         if ($r->filled('pais_id')) $q->where('pais_id', $r->pais_id);
         if ($r->filled('departamento_id')) $q->where('departamento_id', $r->departamento_id);
         if ($r->filled('municipio_id')) $q->where('municipio_id', $r->municipio_id);
@@ -30,7 +30,7 @@ class UbicacionController extends Controller
 
     public function show(Ubicacion $ubicacion)
     {
-        return $ubicacion->load(['pais','departamento','municipio']);
+        return $ubicacion->load(['pais', 'departamento', 'municipio']);
     }
 
     public function update(Request $r, Ubicacion $ubicacion)
@@ -42,7 +42,7 @@ class UbicacionController extends Controller
             'direccion'       => 'sometimes|nullable|string|max:255',
         ]);
         $ubicacion->update($data);
-        return $ubicacion->fresh()->load(['pais','departamento','municipio']);
+        return $ubicacion->fresh()->load(['pais', 'departamento', 'municipio']);
     }
 
     public function destroy(Ubicacion $ubicacion)

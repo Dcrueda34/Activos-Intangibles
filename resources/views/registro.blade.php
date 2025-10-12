@@ -99,19 +99,19 @@
           </div>
           <div class="col-md-5">
             <label class="form-label">Nombre</label>
-            <input type="text" name="Nombre" class="form-control" required>
+            <input type="text" name="nombre" class="form-control" required>
           </div>
           <div class="col-md-4">
             <label class="form-label">Fecha</label>
-            <input type="date" name="Fecha" class="form-control" required>
+            <input type="date" name="fecha" class="form-control" required>
           </div>
           <div class="col-md-8">
             <label class="form-label">Descripción</label>
-            <textarea name="Descripcion" class="form-control" rows="3" required></textarea>
+            <textarea name="descripcion" class="form-control" rows="3" required></textarea>
           </div>
           <div class="col-md-4">
             <label class="form-label">Certificado (PDF/ZIP/JPG/PNG)</label>
-            <input type="file" name="Certificado" class="form-control" accept=".pdf,.zip,.jpg,.jpeg,.png">
+            <input type="file" name="certificado" class="form-control" accept=".pdf,.zip,.jpg,.jpeg,.png">
           </div>
           <div class="col-12">
             <button class="btn btn-primary">Guardar empresa</button>
@@ -244,7 +244,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const API = '/api';
+const API = 'http://127.0.0.1:8000/api';
 const alertBox = document.getElementById('alert');
 const showAlert = (msg, type='success') => {
   alertBox.textContent = msg;

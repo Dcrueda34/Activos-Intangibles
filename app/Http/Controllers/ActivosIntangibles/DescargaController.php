@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inversion;
@@ -19,28 +19,28 @@ class DescargaController extends Controller
 
         switch ($recurso) {
             case 'inversiones': {
-                $inv = Inversion::findOrFail($id);
-                $filename = $inv->CertificadoInversion; // nombre guardado en DB (legacy)
-                $path = $base . DIRECTORY_SEPARATOR . 'inversiones' . DIRECTORY_SEPARATOR . $filename;
-                $downloadName = $filename ?: ("certificado-inversion-{$id}.pdf");
-                break;
-            }
+                    $inv = Inversion::findOrFail($id);
+                    $filename = $inv->CertificadoInversion; // nombre guardado en DB (legacy)
+                    $path = $base . DIRECTORY_SEPARATOR . 'inversiones' . DIRECTORY_SEPARATOR . $filename;
+                    $downloadName = $filename ?: ("certificado-inversion-{$id}.pdf");
+                    break;
+                }
             case 'proyectos': {
-                $proy = Proyecto::findOrFail($id);
-                $filename = $proy->Certificado; // nombre guardado en DB (legacy)
-                $path = $base . DIRECTORY_SEPARATOR . 'proyectos' . DIRECTORY_SEPARATOR . $filename;
-                $downloadName = $filename ?: ("certificado-proyecto-{$id}.pdf");
-                break;
-            }
-            // app/Http/Controllers/Admin/DescargaController.php
-// ... dentro de certificado($recurso, $id)
-case 'proyectos-liquidacion': {
-    $proy = Proyecto::findOrFail($id);
-    $filename = $proy->Certificado_L; // acta de liquidación
-    $path = storage_path('app/certificados/liquidaciones/' . $filename);
-    $downloadName = $filename ?: ("acta-liquidacion-proyecto-{$id}.pdf");
-    break;
-}
+                    $proy = Proyecto::findOrFail($id);
+                    $filename = $proy->Certificado; // nombre guardado en DB (legacy)
+                    $path = $base . DIRECTORY_SEPARATOR . 'proyectos' . DIRECTORY_SEPARATOR . $filename;
+                    $downloadName = $filename ?: ("certificado-proyecto-{$id}.pdf");
+                    break;
+                }
+                // app/Http/Controllers/Admin/DescargaController.php
+                // ... dentro de certificado($recurso, $id)
+            case 'proyectos-liquidacion': {
+                    $proy = Proyecto::findOrFail($id);
+                    $filename = $proy->Certificado_L; // acta de liquidación
+                    $path = storage_path('app/certificados/liquidaciones/' . $filename);
+                    $downloadName = $filename ?: ("acta-liquidacion-proyecto-{$id}.pdf");
+                    break;
+                }
 
             default:
                 return response()->json(['message' => 'Recurso no soportado.'], 404);
@@ -72,7 +72,7 @@ case 'proyectos-liquidacion': {
             ->orderByDesc('ID_Inversion')
             ->get(['ID_Inversion', 'Nombre', 'CertificadoInversion']);
 
-        return $items->map(fn ($i) => [
+        return $items->map(fn($i) => [
             'id'           => $i->ID_Inversion,
             'nombre'       => $i->Nombre,
             'archivo'      => $i->CertificadoInversion,
@@ -90,7 +90,7 @@ case 'proyectos-liquidacion': {
             ->orderByDesc('ID_Proyecto')
             ->get(['ID_Proyecto', 'Nombre', 'Certificado']);
 
-        return $items->map(fn ($p) => [
+        return $items->map(fn($p) => [
             'id'           => $p->ID_Proyecto,
             'nombre'       => $p->Nombre,
             'archivo'      => $p->Certificado,

@@ -10,5 +10,5 @@ class Proyecto extends Model
     protected $primaryKey = 'ID_Proyecto';
     public $timestamps = false;
 
-    protected $fillable = ['Nombre','Fecha','Descripcion','Certificado'];
+    protected $fillable = ['nombre', 'fecha', 'descripcion', 'certificado'];
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pais;
@@ -19,11 +19,14 @@ class PaisController extends Controller
         return response()->json(Pais::create($data), 201);
     }
 
-    public function show(Pais $pais) { return $pais; }
+    public function show(Pais $pais)
+    {
+        return $pais;
+    }
 
     public function update(Request $request, Pais $pais)
     {
-        $data = $request->validate(['nombre' => 'required|string|max:150|unique:paises,nombre,'.$pais->id]);
+        $data = $request->validate(['nombre' => 'required|string|max:150|unique:paises,nombre,' . $pais->id]);
         $pais->update($data);
         return $pais->fresh();
     }
@@ -82,5 +85,3 @@ class PaisController extends Controller
         ]);
     }
 }
-
-

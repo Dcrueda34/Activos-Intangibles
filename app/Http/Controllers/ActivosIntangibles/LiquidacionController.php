@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -65,7 +65,7 @@ class LiquidacionController extends Controller
             if (!isset($usuarios[$uid])) {
                 $usuarios[$uid] = [
                     'usuario_id' => $uid,
-                    'nombre'     => trim(($inv->NombreUsuario ?? '').' '.($inv->ApellidoUsuario ?? '')),
+                    'nombre'     => trim(($inv->NombreUsuario ?? '') . ' ' . ($inv->ApellidoUsuario ?? '')),
                     'dinero'     => 0,
                     'especie'    => 0,
                     'industria'  => 0,
@@ -75,7 +75,7 @@ class LiquidacionController extends Controller
             }
 
             // Mapear tipo a clave legible
-            $claveTipo = match((int)$inv->FK_ID_Tipo) {
+            $claveTipo = match ((int)$inv->FK_ID_Tipo) {
                 1 => 'dinero',
                 2 => 'especie',
                 3 => 'industria',
@@ -147,52 +147,54 @@ class LiquidacionController extends Controller
         ], 501);
     }
     /**
- * POST /api/proyectos/{proyecto}/liquidar
- * Request: form-data con campo obligatorio 'documento_L' (pdf/zip/jpg/png, máx 10MB)
- * Efecto: sube el acta, guarda el nombre en Certificado_L y marca liquidado = 1
- */
-public function liquidar(Request $r, Proyecto $proyecto)
-{
-    // Validación de archivo
-    $data = $r->validate([
-        'documento_L' => 'required|file|mimes:pdf,zip,jpg,jpeg,png|max:10240', // 10MB
-    ]);
+     * POST /api/proyectos/{proyecto}/liquidar
+     * Request: form-data con campo obligatorio 'documento_L' (pdf/zip/jpg/png, máx 10MB)
+     * Efecto: sube el acta, guarda el nombre en Certificado_L y marca liquidado = 1
+     */
+    public function liquidar(Request $r, Proyecto $proyecto)
+    {
+        // Validación de archivo
+        $data = $r->validate([
+            'documento_L' => 'required|file|mimes:pdf,zip,jpg,jpeg,png|max:10240', // 10MB
+        ]);
 
-    // Bloquear si ya está liquidado
-    if ((int)($proyecto->liquidado ?? 0) === 1) {
+        // Bloquear si ya está liquidado
+        if ((int)($proyecto->liquidado ?? 0) === 1) {
+            return response()->json([
+                'message' => 'El proyecto ya se encuentra liquidado.',
+            ], 409);
+        }
+
+        // Guardar archivo en storage/app/certificados/liquidaciones
+        $file = $r->file('documento_L');
+        $dir  = storage_path('app/certificados/liquidaciones');
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+
+        $base = 'liquidacion-proyecto-' . $proyecto->ID_Proyecto . '-' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), '-');
+        $ext  = strtolower($file->getClientOriginalExtension());
+        $name = $base . '.' . $ext;
+
+        $i = 1;
+        while (file_exists($dir . DIRECTORY_SEPARATOR . $name)) {
+            $name = $base . '-' . $i . '.' . $ext;
+            $i++;
+        }
+
+        $file->move($dir, $name);
+
+        // Actualizar proyecto
+        $proyecto->liquidado    = 1;
+        $proyecto->Certificado_L = $name;              // guardamos solo el nombre del archivo (no ruta)
+        // Si tienes una columna para fecha de liquidación, descomenta:
+        // $proyecto->Fecha_Liquidacion = now()->toDateString();
+        $proyecto->save();
+
         return response()->json([
-            'message' => 'El proyecto ya se encuentra liquidado.',
-        ], 409);
+            'message'  => 'Liquidación registrada exitosamente.',
+            'proyecto' => $proyecto->fresh(),
+            'archivo'  => $name,
+        ], 200);
     }
-
-    // Guardar archivo en storage/app/certificados/liquidaciones
-    $file = $r->file('documento_L');
-    $dir  = storage_path('app/certificados/liquidaciones');
-    if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
-
-    $base = 'liquidacion-proyecto-'.$proyecto->ID_Proyecto.'-'.Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), '-');
-    $ext  = strtolower($file->getClientOriginalExtension());
-    $name = $base.'.'.$ext;
-
-    $i = 1;
-    while (file_exists($dir.DIRECTORY_SEPARATOR.$name)) {
-        $name = $base.'-'.$i.'.'.$ext;
-        $i++;
-    }
-
-    $file->move($dir, $name);
-
-    // Actualizar proyecto
-    $proyecto->liquidado    = 1;
-    $proyecto->Certificado_L = $name;              // guardamos solo el nombre del archivo (no ruta)
-    // Si tienes una columna para fecha de liquidación, descomenta:
-    // $proyecto->Fecha_Liquidacion = now()->toDateString();
-    $proyecto->save();
-
-    return response()->json([
-        'message'  => 'Liquidación registrada exitosamente.',
-        'proyecto' => $proyecto->fresh(),
-        'archivo'  => $name,
-    ], 200);
-}
 }

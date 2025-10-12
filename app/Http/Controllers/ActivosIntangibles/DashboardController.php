@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -52,7 +52,7 @@ class DashboardController extends Controller
         }
 
         // Etiquetas de meses (abrevia si prefieres)
-        $labels = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        $labels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
         return response()->json([
             'year'   => $year,
@@ -61,4 +61,3 @@ class DashboardController extends Controller
         ]);
     }
 }
-

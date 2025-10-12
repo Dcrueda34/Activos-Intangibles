@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Inversion;
@@ -32,7 +32,7 @@ class InversionController extends Controller
             $s = $r->input('search');
             $q->where(function ($q) use ($s) {
                 $q->where('Nombre', 'like', "%$s%")
-                  ->orWhere('Descripcion', 'like', "%$s%");
+                    ->orWhere('Descripcion', 'like', "%$s%");
             });
         }
 
@@ -67,7 +67,7 @@ class InversionController extends Controller
 
         return response()->json([
             'message' => 'Inversión creada correctamente.',
-            'data'    => $inv->load(['usuario','proyecto','tipo']),
+            'data'    => $inv->load(['usuario', 'proyecto', 'tipo']),
         ], 201);
     }
 
@@ -76,7 +76,7 @@ class InversionController extends Controller
      */
     public function show(Inversion $inversion)
     {
-        return $inversion->load(['usuario','proyecto','tipo']);
+        return $inversion->load(['usuario', 'proyecto', 'tipo']);
     }
 
     /**
@@ -110,7 +110,7 @@ class InversionController extends Controller
 
         return response()->json([
             'message' => 'Inversión actualizada.',
-            'data'    => $inversion->fresh()->load(['usuario','proyecto','tipo']),
+            'data'    => $inversion->fresh()->load(['usuario', 'proyecto', 'tipo']),
         ]);
     }
 
@@ -150,15 +150,17 @@ class InversionController extends Controller
     private function storeCert(\Illuminate\Http\UploadedFile $file, int $usuarioId, int $proyectoId): string
     {
         $dir = storage_path('app/certificados/inversiones');
-        if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
 
-        $base = 'inv-u'.$usuarioId.'-p'.$proyectoId.'-'.Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $base = 'inv-u' . $usuarioId . '-p' . $proyectoId . '-' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
         $ext  = strtolower($file->getClientOriginalExtension());
-        $name = $base.'.'.$ext;
+        $name = $base . '.' . $ext;
 
         $i = 1;
-        while (file_exists($dir.DIRECTORY_SEPARATOR.$name)) {
-            $name = $base.'-'.$i.'.'.$ext;
+        while (file_exists($dir . DIRECTORY_SEPARATOR . $name)) {
+            $name = $base . '-' . $i . '.' . $ext;
             $i++;
         }
 

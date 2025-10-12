@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
@@ -12,7 +12,7 @@ class EmpresaController extends Controller
     {
         $q = Empresa::query();
         if ($request->filled('search')) {
-            $q->where('nombre', 'like', '%'.$request->search.'%');
+            $q->where('nombre', 'like', '%' . $request->search . '%');
         }
         return $q->paginate(20);
     }
@@ -38,7 +38,7 @@ class EmpresaController extends Controller
     {
         $data = $request->validate([
             'nombre' => 'sometimes|string|max:255',
-            'nit'    => 'sometimes|nullable|string|max:100|unique:empresas,nit,'.$empresa->id,
+            'nit'    => 'sometimes|nullable|string|max:100|unique:empresas,nit,' . $empresa->id,
             'email'  => 'sometimes|nullable|email|max:255',
         ]);
 

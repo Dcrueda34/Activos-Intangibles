@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\ActivosIntangibles;
 
 use App\Http\Controllers\Controller;
 use App\Models\Usuario;
@@ -19,7 +19,10 @@ class UsuarioController extends Controller
             'Apellido'         => 'required|string|max:150',
             'Telefono'         => 'required|string|max:50',
             'Correo'           => [
-                'required', 'string', 'email', 'max:190',
+                'required',
+                'string',
+                'email',
+                'max:190',
                 // evita duplicados de correo en otros usuarios
                 Rule::unique('usuario2', 'Correo')->ignore($usuario->getKey(), $usuario->getKeyName()),
             ],
@@ -61,10 +64,13 @@ class UsuarioController extends Controller
             'apellido_usuario'  => 'required|string|max:150',
             'telefono_usuario'  => 'required|string|max:50',
             'correo_usuario'    => [
-                'required','string','email','max:190',
+                'required',
+                'string',
+                'email',
+                'max:190',
                 Rule::unique('usuario2', 'Correo')->ignore($r->integer('id_usuario'), 'ID_Usuario'),
             ],
-            'contraseña_usuario'=> 'nullable|string|min:6|max:190',
+            'contraseña_usuario' => 'nullable|string|min:6|max:190',
             'municipio_usuario' => 'required|integer|exists:municipio,ID_Municipio',
         ]);
 
@@ -87,7 +93,7 @@ class UsuarioController extends Controller
             'data'    => $usuario,
         ]);
     }
-     public function destroy(Usuario $usuario)
+    public function destroy(Usuario $usuario)
     {
         $tieneVinculos = DB::table('proyecto_usuario')
             ->where('FK_ID_Usuario', $usuario->ID_Usuario)
@@ -142,4 +148,3 @@ class UsuarioController extends Controller
         ]);
     }
 }
-

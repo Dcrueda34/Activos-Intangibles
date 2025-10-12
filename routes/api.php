@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 // ===== Controladores =====
-use App\Http\Controllers\Admin\{
+use App\Http\Controllers\ActivosIntangibles\{
     AdminController,
     ConsultaController,
     DepartamentoController,
@@ -27,14 +27,15 @@ use App\Http\Controllers\Admin\{
 // =====================================================
 // RUTA DE PRUEBA
 // =====================================================
-Route::get('/test', fn () => response()->json(['status' => 'API funcionando ✅']));
+Route::get('/test', fn() => response()->json(['status' => 'API funcionando ✅']));
 
 // =====================================================
 // CRUDs PRINCIPALES (API Resources)
 // (cada apiResource ya define index, show, store, update, destroy)
 // =====================================================
 Route::apiResource('usuarios',        UsuarioController::class);
-Route::apiResource('proyectos',       ProyectoController::class);
+Route::post('/proyectos', [App\Http\Controllers\ActivosIntangibles\ProyectoController::class, 'store']);
+
 Route::apiResource('inversiones',     InversionController::class);
 
 Route::apiResource('empresas',        EmpresaController::class);            // si tu app los usa
@@ -89,7 +90,7 @@ Route::delete('vinculaciones', [VinculacionController::class, 'destroy']);
 // =====================================================
 // REPORTES / GRÁFICOS
 // =====================================================
-Route::get('reportes/datos-line', [ReporteController::class, 'datosLine']);
+//URoute::get('reportes/datos-line', [ReporteController::class, 'datosLine']);
 
 // =====================================================
 // DESCARGAS
