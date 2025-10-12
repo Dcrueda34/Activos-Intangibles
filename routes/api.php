@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ActivosIntangibles\{
     AdminController,
     ConsultaController,
-    DepartamentoController,
     DescargaController,
+    // DepartamentoController,
     DashboardController,
     EmpresaController,
     InversionController,
@@ -15,15 +15,18 @@ use App\Http\Controllers\ActivosIntangibles\{
     MunicipioController,
     PaisController,
     ProyectoController,
-    ReporteController,
     SimulacionController,
-    TasaController,
     TipoInversionController,
+    TasaController,
     UbicacionController,
     UsuarioController,
     VinculacionController
 };
 
+
+// OJO: TipoInversionController NO está en Admin
+
+use App\Http\Controllers\Admin\DepartamentoController;
 // =====================================================
 // RUTA DE PRUEBA
 // =====================================================
@@ -32,28 +35,24 @@ Route::get('/test', fn() => response()->json(['status' => 'API funcionando ✅']
 // =====================================================
 // CRUDs PRINCIPALES (API Resources)
 // (cada apiResource ya define index, show, store, update, destroy)
+
 // =====================================================
 Route::apiResource('usuarios',        UsuarioController::class);
 Route::post('/proyectos', [App\Http\Controllers\ActivosIntangibles\ProyectoController::class, 'store']);
 
 Route::apiResource('inversiones',     InversionController::class);
-
-Route::apiResource('empresas',        EmpresaController::class);            // si tu app los usa
+Route::apiResource('empresas',        EmpresaController::class);
 Route::apiResource('paises',          PaisController::class);
-Route::apiResource('departamentos',   DepartamentoController::class);
+//Route::apiResource('departamentos',   DepartamentoController::class);
 Route::apiResource('municipios',      MunicipioController::class);
 Route::apiResource('tipos-inversion', TipoInversionController::class);
 Route::apiResource('tasas',           TasaController::class);
 Route::apiResource('ubicaciones',     UbicacionController::class);
-// Vinculaciones: NO usamos apiResource (pivot con PK compuesta); abajo van endpoints explícitos.
-// Route::apiResource('vinculaciones', VinculacionController::class); // <- NO usar
-
 Route::apiResource('liquidaciones',   LiquidacionController::class);
 Route::apiResource('simulaciones',    SimulacionController::class);
 
-
 // =====================================================
-// ACCIONES ESPECÍFICAS EN PROYECTOS (si existen en tu controller)
+// ACCIONES ESPECÍFICAS EN PROYECTOS / TIPOS
 // =====================================================
 Route::post('proyectos/{proyecto}/liquidar', [ProyectoController::class, 'liquidar']);
 Route::post('proyectos/{proyecto}/simular',  [ProyectoController::class, 'simular']);
@@ -61,7 +60,7 @@ Route::post('proyectos/{proyecto}/simular',  [ProyectoController::class, 'simula
 // =====================================================
 // DASHBOARD
 // =====================================================
-Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+Route::get('dashboard/summary',          [DashboardController::class, 'summary']);
 Route::get('dashboard/proyectos-por-mes', [DashboardController::class, 'proyectosPorMes']);
 
 // =====================================================
@@ -73,9 +72,9 @@ Route::get('consultas/resumen',                         [ConsultaController::cla
 Route::get('consultas/busqueda',                        [ConsultaController::class, 'busqueda']);
 
 Route::get('catalogos/proyectos-no-liquidados', [ConsultaController::class, 'proyectosNoLiquidados']);
-Route::get('simulacion/resumen',                [SimulacionController::class, 'resumen']); // ?proyecto_id=123
 Route::get('catalogos/usuarios-para-vincular',  [ConsultaController::class, 'usuariosParaVincular']);
-Route::get('tasas/ultima', [TasaController::class, 'ultima']);
+Route::get('simulacion/resumen',                [SimulacionController::class, 'resumen']); // ?proyecto_id=123
+Route::get('tasas/ultima',                      [TasaController::class, 'ultima']);
 
 // =====================================================
 // VINCULACIONES (pivot proyecto_usuario)
@@ -94,7 +93,6 @@ Route::delete('vinculaciones', [VinculacionController::class, 'destroy']);
 
 // =====================================================
 // DESCARGAS
-//  recurso: inversiones | proyectos
 // =====================================================
 Route::get('descargas/{recurso}/{id}/certificado', [DescargaController::class, 'certificado'])
     ->whereIn('recurso', ['inversiones', 'proyectos']);
@@ -102,18 +100,16 @@ Route::get('descargas/{recurso}/{id}/certificado', [DescargaController::class, '
 Route::get('descargas/proyectos-liquidacion/{id}', [DescargaController::class, 'certificado'])
     ->defaults('recurso', 'proyectos-liquidacion');
 
-
-
-// (Opcional: listados de descargas si los implementaste)
+// Listados opcionales
 Route::get('descargas/inversiones', [DescargaController::class, 'inversiones'])->name('descargas.inversiones');
 Route::get('descargas/proyectos',   [DescargaController::class, 'proyectos'])->name('descargas.proyectos');
 
 // =====================================================
-// OPERACIONES EN LOTE (solo si tus controllers las implementan)
+// OPERACIONES EN LOTE (opcional)
 // =====================================================
-Route::delete('inversiones',     [InversionController::class,   'destroyMany']);   // DELETE body: { "ids": [...] }
-Route::delete('proyectos',       [ProyectoController::class,     'destroyMany']);   // DELETE body: { "ids": [...] }
-// Descomenta si creaste los métodos:
+Route::delete('inversiones', [InversionController::class, 'destroyMany']);
+Route::delete('proyectos',   [ProyectoController::class,   'destroyMany']);
+// Si implementas más adelante:
 // Route::delete('departamentos', [DepartamentoController::class, 'destroyMany']);
 // Route::delete('paises',        [PaisController::class,        'destroyMany']);
 // Route::delete('municipios',    [MunicipioController::class,   'destroyMany']);
@@ -121,10 +117,9 @@ Route::delete('proyectos',       [ProyectoController::class,     'destroyMany'])
 // =====================================================
 // COMPATIBILIDAD LEGACY (opcionales)
 // =====================================================
-Route::post('usuarios/update-legacy',        [UsuarioController::class,       'updateLegacy']);
-Route::post('municipios/update-legacy',      [MunicipioController::class,     'updateLegacy']);
-Route::post('paises/update-legacy',          [PaisController::class,          'updateLegacy']);
-Route::post('tipos-inversion/update-legacy', [TipoInversionController::class, 'updateLegacy']);
+Route::post('usuarios/update-legacy',   [UsuarioController::class,   'updateLegacy']);
+Route::post('municipios/update-legacy', [MunicipioController::class, 'updateLegacy']);
+Route::post('paises/update-legacy',     [PaisController::class,      'updateLegacy']);
 
 // =====================================================
 // FALLBACK 404 JSON

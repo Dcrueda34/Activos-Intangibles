@@ -3,17 +3,25 @@
 
 use Illuminate\Support\Facades\Route;
 
+// VISTAS (Blade)
+Route::view('/dashboard', 'dashboard.index')->name('dashboard');   
+Route::view('/inicio', 'dashboard.index')->name('inicio');
 
-Route::view('/inicio', 'inicio'); //  http://localhost:8000/inicio
+Route::view('/empresas', 'empresas.index')->name('empresas.index');
+Route::view('/inversiones', 'inversiones.index')->name('inversiones.index');
 
-Route::view('/empresas', 'empresas'); // http://localhost:8000/empresas
+Route::view('/tasas', 'tasas.index')->name('tasas.index');
+Route::view('/simulacion', 'simulacion.index')->name('simulacion.index');
 
-Route::view('/inversiones', 'inversiones'); // http://localhost:8000/inversiones
+Route::view('/liquidacion', 'liquidacion.index')->name('liquidacion.index');
+Route::view('/liquidar-proyecto', 'liquidar-proyecto.index')->name('liquidar-proyecto.index'); // 👈 NUEVA
 
-Route::view('/liquidaciones', 'liquidaciones'); // http://localhost:8000/liquidaciones
+Route::view('/registro', 'registro.index')->name('registro.index'); 
+Route::view('/consultas', 'consultas.index')->name('consultas.index');
+Route::view('/tipos-inversion', 'tipos-inversion.index')->name('tipos-inversion.index');
+Route::view('/ubicacion', 'ubicacion.index')->name('ubicacion.index');
 
-Route::view('/liquidar-proyecto', 'liquidar_proyecto'); // http://localhost:8000/liquidar-proyecto
 
-Route::view('/registro', 'registro'); // http://localhost:8000/registro
 
-Route::view('/simulacion', 'simulacion'); // http://localhost:8000/simulacion
+// Home por defecto
+Route::redirect('/', '/dashboard');
