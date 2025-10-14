@@ -20,7 +20,8 @@ use App\Http\Controllers\ActivosIntangibles\{
     TasaController,
     UbicacionController,
     UsuarioController,
-    VinculacionController
+    VinculacionController,
+    ValoracionController
 };
 
 
@@ -39,6 +40,8 @@ Route::get('/test', fn() => response()->json(['status' => 'API funcionando ✅']
 // =====================================================
 Route::apiResource('usuarios',        UsuarioController::class);
 Route::post('/proyectos', [App\Http\Controllers\ActivosIntangibles\ProyectoController::class, 'store']);
+Route::apiResource('proyectos', ProyectoController::class)
+    ->only(['index', 'store', 'update', 'destroy']);
 
 Route::apiResource('inversiones',     InversionController::class);
 Route::apiResource('empresas',        EmpresaController::class);
@@ -50,6 +53,8 @@ Route::apiResource('tasas',           TasaController::class);
 Route::apiResource('ubicaciones',     UbicacionController::class);
 Route::apiResource('liquidaciones',   LiquidacionController::class);
 Route::apiResource('simulaciones',    SimulacionController::class);
+Route::apiResource('valoraciones', ValoracionController::class);
+
 
 // =====================================================
 // ACCIONES ESPECÍFICAS EN PROYECTOS / TIPOS
@@ -75,6 +80,9 @@ Route::get('catalogos/proyectos-no-liquidados', [ConsultaController::class, 'pro
 Route::get('catalogos/usuarios-para-vincular',  [ConsultaController::class, 'usuariosParaVincular']);
 Route::get('simulacion/resumen',                [SimulacionController::class, 'resumen']); // ?proyecto_id=123
 Route::get('tasas/ultima',                      [TasaController::class, 'ultima']);
+Route::post('/tasas', [TasaController::class, 'store']);
+Route::delete('/tasas/{id}', [TasaController::class, 'destroy']);
+
 
 // =====================================================
 // VINCULACIONES (pivot proyecto_usuario)
@@ -120,6 +128,13 @@ Route::delete('proyectos',   [ProyectoController::class,   'destroyMany']);
 Route::post('usuarios/update-legacy',   [UsuarioController::class,   'updateLegacy']);
 Route::post('municipios/update-legacy', [MunicipioController::class, 'updateLegacy']);
 Route::post('paises/update-legacy',     [PaisController::class,      'updateLegacy']);
+
+
+//VALORACION
+
+Route::get('/valoracion/datos-entrada', [ValoracionController::class, 'datosEntrada'])
+    ->name('valoracion.datos_entrada');
+
 
 // =====================================================
 // FALLBACK 404 JSON

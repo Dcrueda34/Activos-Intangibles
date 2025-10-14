@@ -4,7 +4,7 @@
 @section('page-title','Tasas de interés')
 
 @section('content')
-<div class="card">
+<div class="card shadow-sm">
   <div class="card-body">
     <form id="tasasForm" onsubmit="event.preventDefault(); validarGuardar();">
       <div class="row g-3">
@@ -76,65 +76,106 @@
         </div>
       </div>
 
-      <div class="d-flex gap-2 mt-3">
-        <button class="btn btn-primary">Guardar</button>
-        <button type="button" class="btn btn-outline-secondary" onclick="cargarLocal()">Cargar últimos</button>
-        <button type="button" class="btn btn-outline-danger" onclick="localStorage.clear();showToast('Datos locales borrados','warning')">Borrar locales</button>
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary">
+          <i class="bi bi-save"></i> Guardar
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="cargarLocal()">
+          <i class="bi bi-cloud-download"></i> Cargar últimos
+        </button>
+        <button type="button" class="btn btn-outline-danger" onclick="localStorage.clear();showToast('Datos locales borrados','warning')">
+          <i class="bi bi-trash"></i> Borrar locales
+        </button>
       </div>
     </form>
+
+    <hr class="my-4">
+
+    <h5 class="mb-3">📊 Historial de Tasas Guardadas</h5>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle" id="tablaTasas">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Tasa (%)</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" class="text-center text-muted">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-const API='/api';
 
+const API = '/api';
+
+// 🔹 Función para convertir a porcentaje decimal
 function pct(x){ return (parseFloat(x)||0)/100; }
+
+// 🔹 Validar y guardar (local + servidor)
 function validarGuardar(){
   calcular();
   guardarLocal();
   guardarServidor();
 }
+
+// 🔹 Cálculo principal
 function calcular(){
-  const tlr2=pct(tlr.value), tlrc2=pct(tlrc.value), rsyp2=pct(rsyp.value),
-        bd2=parseFloat(bd.value)||0, tdi2=pct(tdi.value),
-        a2=parseFloat(a.value)||0, d2=parseFloat(d.value)||0, p2=parseFloat(p.value)||0,
-        de2=pct(de.value), ppt2=pct(ppt.value);
+  const tlrVal=pct(tlr.value), tlrcVal=pct(tlrc.value), rsypVal=pct(rsyp.value),
+        bdVal=parseFloat(bd.value)||0, tdiVal=pct(tdi.value),
+        aVal=parseFloat(a.value)||0, dVal=parseFloat(d.value)||0, pVal=parseFloat(p.value)||0,
+        deVal=pct(de.value), pptVal=pct(ppt.value);
 
-  const rp2 = tlrc2 - tlr2;
-  const rlr2 = tlrc2;
-  const pdm2 = rsyp2 - tlrc2;
-  const da2 = a2? d2/a2 : 0;
-  const pa2 = a2? p2/a2 : 0;
-  const dp2 = p2? d2/p2 : 0;
-  const ba2 = bd2 * (1 + (dp2 * (1 - tdi2)));
-  const cepi2 = tlr2 + ba2 * pdm2 + rp2;
-  const cepiep2 = (1 + cepi2) * (1 + de2) - 1;
-  const cepeiep2 = cepiep2 + ppt2;
-  const cdddi2 = (pct(document.getElementById('cdadi')?.value||0)) * (1 - tdi2); // si no se usa cdadi input, queda 0
-  const tdd2 = pa2 * cepeiep2 + da2 * cdddi2;
-  const tddaar = tdd2 + pct(document.getElementById('sda')?.value||0);
+  const rp = tlrcVal - tlrVal;
+  const pdm = rsypVal - tlrcVal;
+  const da = aVal ? dVal/aVal : 0;
+  const pa = aVal ? pVal/aVal : 0;
+  const dp = pVal ? dVal/pVal : 0;
 
-  tlr2.value = (tlr2*100).toFixed(2)+'%';
-  tlrc2.value = (tlrc2*100).toFixed(2)+'%';
-  rsyp2.value = (rsyp2*100).toFixed(2)+'%';
-  bd2.value = bd2.toFixed(2);
-  tdi2.value = (tdi2*100).toFixed(2)+'%';
-  a2.value = a2.toFixed(0);
-  d2.value = d2.toFixed(0);
-  p2.value = p2.toFixed(0);
-  de2.value = (de2*100).toFixed(2)+'%';
-  ppt2.value= (ppt2*100).toFixed(2)+'%';
-  document.getElementById('cepeiep2').value=(cepeiep2*100).toFixed(2)+'%';
-  document.getElementById('cdddi2').value=(cdddi2*100).toFixed(2)+'%';
+  const ba = bdVal * (1 + (dp * (1 - tdiVal)));
+  const cepi = tlrVal + ba * pdm + rp;
+  const cepiep = (1 + cepi) * (1 + deVal) - 1;
+  const cepeiep = cepiep + pptVal;
+  const cdddi = (pct(document.getElementById('cdadi')?.value||0)) * (1 - tdiVal);
+  const tdd = pa * cepeiep + da * cdddi;
+  const tddaar = tdd + pct(document.getElementById('sda')?.value||0);
+
+  // 🔹 Mostrar resultados en sus campos secundarios
+  tlr2.value = (tlrVal*100).toFixed(2)+'%';
+  tlrc2.value = (tlrcVal*100).toFixed(2)+'%';
+  rsyp2.value = (rsypVal*100).toFixed(2)+'%';
+  bd2.value = bdVal.toFixed(2);
+  tdi2.value = (tdiVal*100).toFixed(2)+'%';
+  a2.value = aVal.toFixed(0);
+  d2.value = dVal.toFixed(0);
+  p2.value = pVal.toFixed(0);
+  de2.value = (deVal*100).toFixed(2)+'%';
+  ppt2.value= (pptVal*100).toFixed(2)+'%';
+  cdddi2.value=(cdddi*100).toFixed(2)+'%';
+  cepeiep2.value=(cepeiep*100).toFixed(2)+'%';
   tddaar2.value=(tddaar*100).toFixed(2)+'%';
-  showToast('Cálculo actualizado','info');
+
+  showToast('✅ Cálculo actualizado correctamente','info');
 }
+
+// 🔹 Guardar datos localmente
 function guardarLocal(){
-  const ids=['tlr','tlrc','rsyp','bd','tdi','a','d','p','de','ppt','tddaar2'];
-  ids.forEach(id=>localStorage.setItem('tasas:'+id, document.getElementById(id)?.value??''));
+  const ids=['tlr','tlrc','rsyp','bd','tdi','a','d','p','de','ppt'];
+  ids.forEach(id=>{
+    localStorage.setItem('tasas:'+id, document.getElementById(id)?.value ?? '');
+  });
+  showToast('💾 Datos guardados localmente','success');
 }
+
+// 🔹 Cargar desde localStorage
 function cargarLocal(){
   const ids=['tlr','tlrc','rsyp','bd','tdi','a','d','p','de','ppt'];
   ids.forEach(id=>{
@@ -142,20 +183,92 @@ function cargarLocal(){
     if(v!==null) document.getElementById(id).value=v;
   });
   calcular();
+  showToast('☁️ Datos locales cargados','info');
 }
+
+// 🔹 Cargar última tasa desde servidor
+async function cargarUltimaServidor(){
+  try{
+    const r = await fetch(`${API}/tasas/ultima`);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (data && (data.tasa || data.Tasa)) {
+      document.getElementById('tddaar2').value = (data.tasa || data.Tasa) + '%';
+      showToast('🌐 Tasa cargada desde servidor','success');
+    }
+  }catch(e){
+    console.error('Error al cargar tasa del servidor', e);
+  }
+}
+
+// 🔹 Guardar tasa final en el servidor
 async function guardarServidor(){
-  // Guardamos SOLO la tasa ajustada (como en tu legacy)
   const tddaar = tddaar2.value.replace('%','');
   try{
     const r = await fetch(`${API}/tasas`,{
       method:'POST',
       headers:{'Accept':'application/json'},
-      body: (()=>{ const fd=new FormData(); fd.append('Tasa',tddaar); return fd; })()
+      body: (()=>{ const fd=new FormData(); fd.append('tasa',tddaar); return fd; })()
     });
-    if(!r.ok) return toastWarn('Guardado local; no se pudo registrar en servidor');
-    toastSuccess('Tasa guardada en servidor');
-  }catch(e){ toastWarn('Guardado local; error de red'); }
+    if(!r.ok) return showToast('⚠️ Guardado local; no se pudo registrar en servidor','warning');
+    showToast('🚀 Tasa guardada en servidor','success');
+    cargarTasas();
+  }catch(e){ showToast('❌ Error de red al guardar','danger'); }
 }
-document.addEventListener('DOMContentLoaded',()=>cargarLocal());
+
+// 🔹 Cargar historial de tasas
+async function cargarTasas(){
+  try{
+    const r = await fetch(`${API}/tasas`);
+    const data = await r.json();
+    const tbody = document.querySelector("#tablaTasas tbody");
+    tbody.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No hay tasas registradas</td></tr>`;
+      return;
+    }
+
+    data.forEach(t => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${t.id}</td>
+          <td>${parseFloat(t.tasa).toFixed(2)}%</td>
+          <td>${t.fecha ?? 'Sin fecha'}</td>
+          <td>
+            <button class="btn btn-sm btn-danger" onclick="eliminarTasa(${t.id})">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (e) {
+    console.error('Error al cargar tasas:', e);
+  }
+}
+
+// 🔹 Eliminar tasa del servidor
+async function eliminarTasa(id){
+  if(!confirm('¿Seguro que deseas eliminar esta tasa?')) return;
+  try{
+    const r = await fetch(`${API}/tasas/${id}`,{method:'DELETE'});
+    if(r.ok){
+      showToast('🗑️ Tasa eliminada correctamente','success');
+      cargarTasas();
+    }else{
+      showToast('❌ Error al eliminar tasa','danger');
+    }
+  }catch(e){
+    showToast('⚠️ Error de red al eliminar','danger');
+  }
+}
+
+// 🔹 Iniciar todo al cargar
+document.addEventListener('DOMContentLoaded',()=>{
+  cargarLocal();
+  cargarUltimaServidor();
+  cargarTasas();
+});
 </script>
 @endpush

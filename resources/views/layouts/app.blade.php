@@ -11,7 +11,20 @@
 
   <style>
     body { background:#f8fafc; }
-    .sidebar { width: 260px; background: #111827; color:#fff; position:fixed; top:0; bottom:0; }
+    .sidebar {
+      width: 260px;
+      background: #111827;
+      color:#fff;
+      position:fixed;
+      top:0;
+      bottom:0;
+      overflow-y:auto; /* ⭐ NUEVO: permite hacer scroll */
+      scrollbar-width: thin;
+      scrollbar-color: #374151 #111827;
+    }
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 10px; }
+
     .sidebar a { color:#d1d5db; text-decoration:none; display:block; padding:.65rem 1rem; border-radius:.5rem; }
     .sidebar a.active, .sidebar a:hover { background:#1f2937; color:#fff; }
     .sidebar .brand { font-weight:700; padding:1rem; border-bottom:1px solid #1f2937; }
@@ -49,9 +62,11 @@
     <a href="{{ route('inversiones.index') }}" class="{{ request()->routeIs('inversiones.*') ? 'active' : '' }}">
       <i class="bi bi-cash-coin me-2"></i> Inversiones
     </a>
-    <a href="{{ route('tasas.index') }}" class="{{ request()->routeIs('tasas.*') ? 'active' : '' }}">
-      <i class="bi bi-percent me-2"></i> Tasas de interés
-    </a>
+  <a href="{{ route('tasas.vista') }}" class="{{ request()->routeIs('tasas.vista') ? 'active' : '' }}">
+  <i class="bi bi-percent me-2"></i> Tasas de interés</a>
+
+
+
 
     <div class="text-uppercase text-secondary small px-2 mt-3 mb-1">Cálculo</div>
     <a href="{{ route('simulacion.index') }}" class="{{ request()->routeIs('simulacion.*') ? 'active' : '' }}">
@@ -61,10 +76,44 @@
       <i class="bi bi-balance-scale me-2"></i> Distribuir participación
     </a>
 
+    <!-- ⭐ NUEVO: Consultas con submenú colapsable -->
     <div class="text-uppercase text-secondary small px-2 mt-3 mb-1">Consultas</div>
-    <a href="{{ route('consultas.index') }}" class="{{ request()->routeIs('consultas.*') ? 'active' : '' }}">
-      <i class="bi bi-table me-2"></i> Consultas
+
+    <!-- Botón principal del grupo -->
+    <a class="nav-link d-flex align-items-center" data-bs-toggle="collapse" href="#menuConsultas" role="button" aria-expanded="false" aria-controls="menuConsultas">
+      <i class="bi bi-table me-2"></i>
+      <span>Consultas</span>
+      <i class="bi bi-chevron-down ms-auto small"></i>
     </a>
+
+    <!-- Submenú -->
+    <div class="collapse ps-4" id="menuConsultas">
+      <a href="{{ route('consultas.index') }}" class="nav-link d-flex align-items-center">
+        <i class="bi bi-list-ul me-2"></i> General
+      </a>
+
+      </a>
+    </div>
+
+       <!-- ⭐ NUEVO: Valoracion con submenú colapsable -->
+<div class="text-uppercase text-secondary small px-2 mt-3 mb-1">Valoración Activos Intangibles</div>
+
+<!-- Botón principal del grupo -->
+<a class="nav-link d-flex align-items-center" data-bs-toggle="collapse" href="#menuValoracion" role="button" aria-expanded="false" aria-controls="menuValoracion">
+  <i class="bi bi-table me-2"></i>
+  <span>Valoración Activos Intangibles</span>
+  <i class="bi bi-chevron-down ms-auto small"></i>
+</a>
+
+<!-- Submenú -->
+<div class="collapse ps-4" id="menuValoracion">
+  <a href="{{ route('valoracion.index') }}" class="nav-link d-flex align-items-center">
+    <i class="bi bi-star me-2 text-warning"></i>
+    <span>Valoración Intangibles</span>
+  </a>
+</div>
+
+
   </nav>
 </aside>
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Inversion extends Model
 {
-    protected $table = 'inversion2';
+    protected $table = 'inversion';
     protected $primaryKey = 'ID_Inversion';
     public $timestamps = false;
 

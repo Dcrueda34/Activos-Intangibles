@@ -9,10 +9,34 @@ use Illuminate\Http\Request;
 
 class ProyectoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Proyecto::all();
+        $query = Proyecto::query();
+
+        // Filtrar por nombre
+        if ($request->has('search') && $request->search != '') {
+            $query->where('nombre', 'like', '%' . $request->search . '%');
+        }
+
+        // Filtrar por fecha desde/hasta
+        if ($request->has('from') && $request->from != '') {
+            $query->whereDate('fecha', '>=', $request->from);
+        }
+        if ($request->has('to') && $request->to != '') {
+            $query->whereDate('fecha', '<=', $request->to);
+        }
+
+        // Ordenar
+        $order_by = $request->order_by ?? 'ID_Proyecto';
+        $order_dir = $request->order_dir ?? 'desc';
+        $query->orderBy($order_by, $order_dir);
+
+        // Paginación
+        $proyectos = $query->paginate(10);
+
+        return response()->json($proyectos);
     }
+
 
     public function store(Request $request)
     {
