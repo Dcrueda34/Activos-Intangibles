@@ -60,4 +60,9 @@ class ValoracionController extends Controller
         $valoracion->delete();
         return response()->json(['message' => 'Valoración eliminada correctamente']);
     }
+
+    public function datosEntrada()
+    {
+        return view('activosintangibles.valoracion.datos-entrada');
+    }
 }
