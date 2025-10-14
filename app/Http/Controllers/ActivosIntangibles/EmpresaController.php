@@ -11,10 +11,24 @@ class EmpresaController extends Controller
     public function index(Request $request)
     {
         $q = Empresa::query();
+
+        // 🔹 Filtro por búsqueda
         if ($request->filled('search')) {
-            $q->where('nombre', 'like', '%' . $request->search . '%');
+            $q->where('Nombre', 'like', '%' . $request->search . '%');
         }
-        return $q->paginate(20);
+
+        // 🔹 Paginación
+        $empresas = $q->paginate(20);
+
+        // 🔹 Respuesta AJAX
+        if ($request->ajax()) {
+            // Renderizamos la parte que se va a actualizar
+            $html = view('empresas.index', compact('empresas'))->render();
+            return response()->json(['html' => $html]);
+        }
+
+        // 🔹 Vista normal
+        return view('empresas.index', compact('empresas'));
     }
 
     public function store(Request $request)
