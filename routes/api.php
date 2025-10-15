@@ -49,6 +49,8 @@ Route::apiResource('usuarios',        UsuarioController::class);
 Route::post('/proyectos', [App\Http\Controllers\Admin\ProyectoController::class, 'store']);
 Route::apiResource('proyectos', ProyectoController::class)
     ->only(['index', 'store', 'update', 'destroy']);
+Route::get('proyectos/select', [\App\Http\Controllers\Admin\ProyectoController::class, 'select'])->name('api.proyectos.select');
+
 
 Route::apiResource('inversiones',     InversionController::class);
 Route::apiResource('empresas',        EmpresaController::class);
@@ -61,6 +63,7 @@ Route::apiResource('ubicaciones',     UbicacionController::class);
 Route::apiResource('liquidaciones',   LiquidacionController::class);
 Route::apiResource('simulaciones',    SimulacionController::class);
 Route::apiResource('valoraciones', ValoracionController::class);
+Route::get('/inversiones', [InversionController::class, 'indexView'])->name('inversiones.index');
 
 
 // =====================================================

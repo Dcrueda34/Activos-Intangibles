@@ -84,4 +84,12 @@ class ProyectoController extends Controller
         $proyecto->delete();
         return response()->noContent();
     }
+
+    public function select()
+    {
+        // Traemos solo los campos que necesitamos para el select
+        $proyectos = \App\Models\Proyecto::select('ID_Proyecto', 'Nombre')->orderBy('Nombre')->get();
+
+        return response()->json($proyectos);
+    }
 }

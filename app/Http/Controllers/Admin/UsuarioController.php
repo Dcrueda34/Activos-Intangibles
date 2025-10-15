@@ -3,89 +3,107 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Usuario;
+use App\Models\Usuario2;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB; // <-- IMPORTANTE
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UsuarioController extends Controller
 {
-    // PUT /api/usuarios/{usuario}
-    public function update(Request $r, Usuario $usuario)
+    /**
+     * LISTAR usuarios
+     * GET /api/usuarios
+     * Opcional: ?search=nombre
+     */
+    public function index(Request $request)
+    {
+        $query = Usuario2::query();
+
+        if ($request->filled('search')) {
+            $query->where('Nombre', 'like', '%' . $request->search . '%');
+        }
+
+        $usuarios = $query->paginate(10);
+
+        return response()->json($usuarios);
+    }
+
+    /**
+     * VER un usuario
+     * GET /api/usuarios/{usuario}
+     */
+    public function show(Usuario2 $usuario)
+    {
+        return response()->json($usuario);
+    }
+
+    /**
+     * CREAR usuario
+     * POST /api/usuarios
+     */
+    public function store(Request $r)
     {
         $data = $r->validate([
             'Nombre'           => 'required|string|max:150',
             'Apellido'         => 'required|string|max:150',
             'Telefono'         => 'required|string|max:50',
-            'Correo'           => [
-                'required',
-                'string',
-                'email',
-                'max:190',
-                Rule::unique('usuario2', 'Correo')->ignore($usuario->getKey(), $usuario->getKeyName()),
-            ],
-            'Contraseña'       => 'nullable|string|min:6|max:190',
+            'Correo'           => 'required|string|email|max:190|unique:usuario2,Correo',
+            'Contraseña'       => 'required|string|min:6|max:190',
             'FK_ID_Municipio'  => 'required|integer|exists:municipio,ID_Municipio',
         ]);
 
-        $usuario->Nombre          = $data['Nombre'];
-        $usuario->Apellido        = $data['Apellido'];
-        $usuario->Telefono        = $data['Telefono'];
-        $usuario->Correo          = $data['Correo'];
-        $usuario->FK_ID_Municipio = $data['FK_ID_Municipio'];
+        $data['Contraseña'] = Hash::make($data['Contraseña']);
 
-        if (!empty($data['Contraseña'])) {
-            $usuario->{'Contraseña'} = Hash::make($data['Contraseña']);
-        }
-
-        $usuario->save();
+        $usuario = Usuario2::create($data);
 
         return response()->json([
-            'message' => 'Usuario actualizado exitosamente.',
-            'data'    => $usuario->fresh(),
-        ], 200);
+            'message' => 'Usuario creado exitosamente.',
+            'data' => $usuario
+        ], 201);
     }
 
-    // POST /api/usuarios/update-legacy
-    public function updateLegacy(Request $r)
+    /**
+     * ACTUALIZAR usuario
+     * PUT /api/usuarios/{usuario}
+     */
+    public function update(Request $r, Usuario2 $usuario)
     {
         $data = $r->validate([
-            'id_usuario'        => 'required|integer|exists:usuario2,ID_Usuario',
-            'nombre_usuario'    => 'required|string|max:150',
-            'apellido_usuario'  => 'required|string|max:150',
-            'telefono_usuario'  => 'required|string|max:50',
-            'correo_usuario'    => [
+            'Nombre'           => 'sometimes|required|string|max:150',
+            'Apellido'         => 'sometimes|required|string|max:150',
+            'Telefono'         => 'sometimes|required|string|max:50',
+            'Correo'           => [
+                'sometimes',
                 'required',
                 'string',
                 'email',
                 'max:190',
-                Rule::unique('usuario2', 'Correo')->ignore($r->integer('id_usuario'), 'ID_Usuario'),
+                Rule::unique('usuario2', 'Correo')->ignore($usuario->ID_Usuario, 'ID_Usuario'),
             ],
-            'contraseña_usuario' => 'nullable|string|min:6|max:190',
-            'municipio_usuario'  => 'required|integer|exists:municipio,ID_Municipio',
+            'Contraseña'       => 'nullable|string|min:6|max:190',
+            'FK_ID_Municipio'  => 'sometimes|required|integer|exists:municipio,ID_Municipio',
         ]);
 
-        $usuario = Usuario::findOrFail($data['id_usuario']);
-        $usuario->Nombre          = $data['nombre_usuario'];
-        $usuario->Apellido        = $data['apellido_usuario'];
-        $usuario->Telefono        = $data['telefono_usuario'];
-        $usuario->Correo          = $data['correo_usuario'];
-        $usuario->FK_ID_Municipio = $data['municipio_usuario'];
-
-        if (!empty($data['contraseña_usuario'])) {
-            $usuario->{'Contraseña'} = Hash::make($data['contraseña_usuario']);
+        if (!empty($data['Contraseña'])) {
+            $data['Contraseña'] = Hash::make($data['Contraseña']);
+        } else {
+            unset($data['Contraseña']);
         }
 
-        $usuario->save();
+        $usuario->update($data);
 
         return response()->json([
             'message' => 'Usuario actualizado exitosamente.',
-            'data'    => $usuario,
+            'data' => $usuario->fresh()
         ]);
     }
 
-    public function destroy(Usuario $usuario)
+    /**
+     * ELIMINAR usuario
+     * DELETE /api/usuarios/{usuario}
+     */
+    public function destroy(Usuario2 $usuario)
     {
         $tieneVinculos = DB::table('proyecto_usuario')
             ->where('FK_ID_Usuario', $usuario->ID_Usuario)
@@ -101,10 +119,14 @@ class UsuarioController extends Controller
 
         return response()->json([
             'message' => 'Usuario eliminado exitosamente.',
-            'id' => $usuario->ID_Usuario,
-        ], 200);
+            'id' => $usuario->ID_Usuario
+        ]);
     }
 
+    /**
+     * ELIMINAR múltiples usuarios
+     * DELETE /api/usuarios (body: { "ids": [1,2,3] })
+     */
     public function destroyMany(Request $r)
     {
         $data = $r->validate([
@@ -128,9 +150,9 @@ class UsuarioController extends Controller
         }
 
         return response()->json([
-            'eliminados'  => $eliminables,
-            'bloqueados'  => $vinculados,
-            'message'     => 'Operación completada.',
+            'eliminados' => $eliminables,
+            'bloqueados' => $vinculados,
+            'message' => 'Operación completada.'
         ]);
     }
 }

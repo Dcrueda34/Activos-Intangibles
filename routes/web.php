@@ -25,5 +25,6 @@ Route::view('/tasas', 'tasas.index')->name('tasas.vista');
 
 
 
+
 // Home por defecto
 Route::redirect('/', '/dashboard');

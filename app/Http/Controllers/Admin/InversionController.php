@@ -11,8 +11,15 @@ use Illuminate\Support\Str;
 class InversionController extends Controller
 {
     /**
-     * GET /api/inversiones
-     * Filtros: ?usuario=ID & proyecto=ID & tipo=ID & from=YYYY-MM-DD & to=YYYY-MM-DD & search=...
+     * WEB: Devuelve la vista Blade de inversiones
+     */
+    public function indexView()
+    {
+        return view('inversiones.index'); // Asegúrate de que exista resources/views/inversiones/index.blade.php
+    }
+
+    /**
+     * API: Devuelve JSON de inversiones con filtros
      */
     public function index(Request $r)
     {
@@ -40,8 +47,7 @@ class InversionController extends Controller
     }
 
     /**
-     * POST /api/inversiones
-     * Acepta archivo opcional 'CertificadoInversion'
+     * Crear inversión (API)
      */
     public function store(Request $r)
     {
@@ -72,7 +78,7 @@ class InversionController extends Controller
     }
 
     /**
-     * GET /api/inversiones/{inversion}
+     * Mostrar inversión específica (API)
      */
     public function show(Inversion $inversion)
     {
@@ -80,7 +86,7 @@ class InversionController extends Controller
     }
 
     /**
-     * PUT /api/inversiones/{inversion}
+     * Actualizar inversión (API)
      */
     public function update(Request $r, Inversion $inversion)
     {
@@ -115,7 +121,7 @@ class InversionController extends Controller
     }
 
     /**
-     * DELETE /api/inversiones/{inversion}
+     * Eliminar inversión (API)
      */
     public function destroy(Inversion $inversion)
     {
@@ -126,8 +132,7 @@ class InversionController extends Controller
     }
 
     /**
-     * DELETE /api/inversiones (lote)
-     * Body: { "ids": [ ... ] }
+     * Eliminar inversiones en lote (API)
      */
     public function destroyMany(Request $r)
     {
@@ -145,7 +150,7 @@ class InversionController extends Controller
     }
 
     /**
-     * Guarda CertificadoInversion en storage/app/certificados/inversiones
+     * Guardar archivo CertificadoInversion
      */
     private function storeCert(\Illuminate\Http\UploadedFile $file, int $usuarioId, int $proyectoId): string
     {
