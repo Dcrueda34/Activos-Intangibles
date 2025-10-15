@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 // ===== Controladores =====
-use App\Http\Controllers\ActivosIntangibles\{
+use App\Http\Controllers\Admin\{
     AdminController,
     ConsultaController,
     DescargaController,
@@ -24,6 +24,13 @@ use App\Http\Controllers\ActivosIntangibles\{
     ValoracionController
 };
 
+//esta en el modulo inversionista
+use App\Http\Controllers\inversionista;
+use App\Http\Controllers\InversionistaController;
+use App\Http\Controllers\Inversionista\ReporteInversionesController;
+use App\Http\Controllers\Inversionista\ReporteController;
+use App\Http\Controllers\Inversionista\DashboardController as InvDash;
+use App\Http\Controllers\Inversionista\LiquidacionController as InvLiquidacion;
 
 // OJO: TipoInversionController NO está en Admin
 
@@ -39,14 +46,14 @@ Route::get('/test', fn() => response()->json(['status' => 'API funcionando ✅']
 
 // =====================================================
 Route::apiResource('usuarios',        UsuarioController::class);
-Route::post('/proyectos', [App\Http\Controllers\ActivosIntangibles\ProyectoController::class, 'store']);
+Route::post('/proyectos', [App\Http\Controllers\Admin\ProyectoController::class, 'store']);
 Route::apiResource('proyectos', ProyectoController::class)
     ->only(['index', 'store', 'update', 'destroy']);
 
 Route::apiResource('inversiones',     InversionController::class);
 Route::apiResource('empresas',        EmpresaController::class);
 Route::apiResource('paises',          PaisController::class);
-//Route::apiResource('departamentos',   DepartamentoController::class);
+//Route::apiResource('departamentos',   DepartamentoController::class);// aun persiste el error de departamento
 Route::apiResource('municipios',      MunicipioController::class);
 Route::apiResource('tipos-inversion', TipoInversionController::class);
 Route::apiResource('tasas',           TasaController::class);
