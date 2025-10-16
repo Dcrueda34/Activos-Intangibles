@@ -14,5 +14,5 @@ class Usuario extends Model
     // public $incrementing = false;
     // protected $keyType = 'int'; // o 'string'
 
-    protected $fillable = ['Nombre','Apellido','Telefono','Correo','Contraseña','FK_ID_Municipio'];
+    protected $fillable = ['Nombre', 'Apellido', 'Telefono', 'Correo', 'Contraseña', 'FK_ID_Municipio'];
 }

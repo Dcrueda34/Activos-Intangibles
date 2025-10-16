@@ -10,7 +10,7 @@ class Departamento extends Model
     protected $primaryKey = 'ID_Departamento';
     public $timestamps = false;
 
-    protected $fillable = ['Nombre','FK_ID_Pais'];
+    protected $fillable = ['Nombre', 'FK_ID_Pais'];
 
     public function pais()
     {

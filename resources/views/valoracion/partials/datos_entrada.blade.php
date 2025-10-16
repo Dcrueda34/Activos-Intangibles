@@ -108,6 +108,42 @@
   </div>
 </div>
 
+<!-- MANO DE OBRA AL DESTAJO -->
+  <div class="col-md-6">
+    <!-- Franja amarilla -->
+    <div class="text-center fw-bold p-2 mb-0"
+         style="background-color: #FFD700; border: 1px solid #000;">
+      MANO DE OBRAAL DESTAJO
+    </div>
+    <table class="table table-bordered text-center align-middle" style="font-size: 0.85rem;">
+      <thead>
+        <tr style="background-color: #dbe4ff;">
+          <th>MANO DE OBRA AL DESTAJO</th>
+          <th>SALARIO</th>
+          <th>ACCIONES</th>
+        </tr>
+      </thead>
+      <tbody id="manoObraTable">
+        <tr>
+          <td><input type="text" name="mano_obra[]" class="form-control" placeholder="Ej: Cocinero"></td>
+          <td><input type="number" name="salario[]" class="form-control text-end salario" placeholder="$0.00" step="0.01" min="0"></td>
+          <td><button type="button" class="btn btn-sm btn-danger eliminar-fila"><i class="bi bi-trash"></i></button></td>
+        </tr>
+      </tbody>
+      <tfoot style="background-color: #dbe4ff;">
+        <tr>
+          <th>TOTAL</th>
+          <th id="totalSalarios">0</th>
+          <th>
+            <button type="button" class="btn btn-sm btn-success" id="agregarFila">
+              <i class="bi bi-plus-circle"></i>
+            </button>
+          </th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
 
       <div class="col-md-3">
         <label class="form-label fw-semibold">Tasa de oportunidad de evaluación del proyecto (%)</label>

@@ -17,6 +17,7 @@ Route::view('/registro', 'registro.index')->name('registro.index');
 Route::view('/consultas', 'consultas.index')->name('consultas.index');
 Route::view('/tipos-inversion', 'tipos-inversion.index')->name('tipos-inversion.index');
 Route::view('/ubicacion', 'ubicacion.index')->name('ubicacion.index');
+Route::view('/usuarios', 'usuarios.index')->name('usuarios.index');
 Route::view('/valoracion', 'valoracion.index')->name('valoracion.index');
 Route::view('/tasas', 'tasas.index')->name('tasas.vista');
 

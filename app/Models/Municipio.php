@@ -10,7 +10,7 @@ class Municipio extends Model
     protected $primaryKey = 'ID_Municipio';
     public $timestamps = false;
 
-    protected $fillable = ['Nombre','FK_ID_Departamento'];
+    protected $fillable = ['Nombre', 'FK_ID_Departamento'];
 
     public function departamento()
     {

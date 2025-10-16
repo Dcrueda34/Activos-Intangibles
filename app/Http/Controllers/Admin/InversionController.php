@@ -48,10 +48,6 @@ class InversionController extends Controller
 
     /**
      * Crear inversión (API)
-     */
-    public function store(Request $r)
-    {
-        $data = $r->validate([
             'Nombre'          => 'required|string|max:200',
             'Monto'           => 'required|numeric|min:0',
             'Fecha'           => 'required|date',
@@ -132,7 +128,12 @@ class InversionController extends Controller
     }
 
     /**
+<<<<<<< HEAD
      * Eliminar inversiones en lote (API)
+=======
+     * DELETE /api/inversiones (lote)
+     * Body: { "ids": [ ... ] }
+>>>>>>> upstream/main
      */
     public function destroyMany(Request $r)
     {
@@ -150,7 +151,11 @@ class InversionController extends Controller
     }
 
     /**
+<<<<<<< HEAD
      * Guardar archivo CertificadoInversion
+=======
+     * Guarda CertificadoInversion en storage/app/certificados/inversiones
+>>>>>>> upstream/main
      */
     private function storeCert(\Illuminate\Http\UploadedFile $file, int $usuarioId, int $proyectoId): string
     {
