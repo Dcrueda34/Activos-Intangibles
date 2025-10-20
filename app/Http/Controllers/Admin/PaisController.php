@@ -5,89 +5,55 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pais;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PaisController extends Controller
 {
-    // Lista / Crear
+    /**
+     * Listar todos los países
+     */
     public function index()
     {
-        return response()->json(Pais::all());
+        return response()->json(
+            Pais::select('ID_Pais', 'Nombre')->orderBy('Nombre')->get()
+        );
     }
 
+    /**
+     * Registrar nuevo país (opcional)
+     */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'Nombre' => 'required|string|max:150|unique:paises,Nombre',
-        ]);
-
-        $pais = Pais::create($data);
+        $request->validate(['Nombre' => 'required|string|max:100']);
+        $pais = Pais::create($request->all());
         return response()->json($pais, 201);
     }
 
-    // Mostrar
-    public function show(Pais $pais)
+    /**
+     * Mostrar un país específico
+     */
+    public function show($id)
     {
+        $pais = Pais::findOrFail($id);
         return response()->json($pais);
     }
 
-    // Actualizar
-    public function update(Request $request, Pais $pais)
+    /**
+     * Actualizar un país
+     */
+    public function update(Request $request, $id)
     {
-        $data = $request->validate([
-            'Nombre' => 'required|string|max:150|unique:paises,Nombre,' . $pais->ID_Pais . ',ID_Pais',
-        ]);
-
-        $pais->update($data);
-        return response()->json(['message' => 'País actualizado', 'pais' => $pais->fresh()]);
+        $pais = Pais::findOrFail($id);
+        $pais->update($request->all());
+        return response()->json($pais);
     }
 
-    // Eliminar
-    public function destroy(Pais $pais)
+    /**
+     * Eliminar un país
+     */
+    public function destroy($id)
     {
-        $tieneDepartamentos = DB::table('departamento')
-            ->where('FK_ID_Pais', $pais->ID_Pais)
-            ->exists();
-
-        if ($tieneDepartamentos) {
-            return response()->json([
-                'message' => 'No se puede eliminar el país porque tiene departamentos asociados.'
-            ], 409);
-        }
-
+        $pais = Pais::findOrFail($id);
         $pais->delete();
-
-        return response()->json([
-            'message' => 'País eliminado exitosamente.',
-            'id'      => $pais->ID_Pais,
-        ]);
-    }
-
-    // Eliminar en lote
-    public function destroyMany(Request $request)
-    {
-        $ids = $request->validate([
-            'ids' => 'required|array',
-            'ids.*' => 'numeric|exists:paises,ID_Pais',
-        ])['ids'];
-
-        $bloqueados = [];
-        foreach ($ids as $id) {
-            $tieneDepartamentos = DB::table('departamento')
-                ->where('FK_ID_Pais', $id)
-                ->exists();
-
-            if ($tieneDepartamentos) {
-                $bloqueados[] = $id;
-                continue;
-            }
-
-            Pais::find($id)?->delete();
-        }
-
-        return response()->json([
-            'message' => 'Proceso completado',
-            'bloqueados' => $bloqueados,
-        ]);
+        return response()->json(['message' => 'País eliminado correctamente']);
     }
 }

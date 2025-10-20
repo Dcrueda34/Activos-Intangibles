@@ -26,11 +26,16 @@ class TasaController extends Controller
     /**
      * GET /api/tasas/ultima
      */
+    // app/Http/Controllers/Admin/TasaController.php
     public function ultima()
     {
-        $ultima = Tasa::orderByDesc('Id')->first();
-        return $ultima ? response()->json($ultima) : response()->json(null, 204);
+        $ultimaTasa = Tasa::latest()->first(); // toma la última tasa por created_at o id
+        return response()->json([
+            'valor' => $ultimaTasa->valor ?? 0
+        ]);
     }
+
+
 
     /**
      * POST /api/tasas
@@ -61,5 +66,16 @@ class TasaController extends Controller
         $t = Tasa::findOrFail($id);
         $t->delete();
         return response()->noContent();
+    }
+
+    public function show($id)
+    {
+        $tasa = \App\Models\Tasa::find($id);
+
+        if (!$tasa) {
+            return response()->json(['message' => 'Tasa no encontrada'], 404);
+        }
+
+        return response()->json($tasa);
     }
 }

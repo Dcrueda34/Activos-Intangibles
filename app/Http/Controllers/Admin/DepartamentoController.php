@@ -3,83 +3,67 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pais;
 use App\Models\Departamento;
-use App\Models\Ciudad;
 use Illuminate\Http\Request;
 
-class PaisController extends Controller
+class DepartamentoController extends Controller
 {
-    // 🔹 Listar países o mostrar vista
-    public function index(Request $r)
+    /**
+     * Listar departamentos, opcionalmente filtrados por país
+     */
+    public function index(Request $request)
     {
-        $q = Pais::query();
+        $query = Departamento::query();
 
-        if ($r->filled('search')) {
-            $q->where('Nombre', 'like', '%' . $r->input('search') . '%');
+        if ($request->filled('pais')) {
+            $query->where('FK_ID_Pais', $request->pais);
         }
 
-        if ($r->wantsJson()) {
-            return $q->orderBy('Nombre')->get();
-        }
-
-        return view('ubicacion.index', [
-            'paises' => $q->orderBy('Nombre')->get()
-        ]);
+        return response()->json(
+            $query->orderBy('Nombre')->get()
+        );
     }
 
-    // 🔹 Crear país
-    public function store(Request $r)
+    /**
+     * Registrar un nuevo departamento
+     */
+    public function store(Request $request)
     {
-        $data = $r->validate([
-            'ID_Pais' => 'required|numeric|unique:pais,ID_Pais',
-            'Nombre'  => 'required|string|max:200',
+        $request->validate([
+            'Nombre' => 'required|string|max:100',
+            'FK_ID_Pais' => 'required|integer|exists:paises,ID_Pais',
         ]);
 
-        $pais = Pais::create($data);
-        return response()->json($pais, 201);
+        $departamento = Departamento::create($request->all());
+        return response()->json($departamento, 201);
     }
 
-    // 🔹 Actualizar país
-    public function update(Request $r, $id)
+    /**
+     * Mostrar un departamento
+     */
+    public function show($id)
     {
-        $pais = Pais::findOrFail($id);
-        $data = $r->validate([
-            'Nombre' => 'required|string|max:200',
-        ]);
-
-        $pais->update($data);
-
-        return response()->json([
-            'message' => 'País actualizado correctamente',
-            'pais' => $pais
-        ]);
+        $departamento = Departamento::findOrFail($id);
+        return response()->json($departamento);
     }
 
-    // 🔹 Eliminar país
+    /**
+     * Actualizar un departamento
+     */
+    public function update(Request $request, $id)
+    {
+        $departamento = Departamento::findOrFail($id);
+        $departamento->update($request->all());
+        return response()->json($departamento);
+    }
+
+    /**
+     * Eliminar un departamento
+     */
     public function destroy($id)
     {
-        Pais::findOrFail($id)->delete();
-        return response()->json(['message' => 'País eliminado correctamente']);
-    }
-
-    // 🔹 Listar departamentos por país
-    public function departamentos($idPais)
-    {
-        $departamentos = Departamento::where('FK_ID_Pais', $idPais)
-            ->orderBy('Nombre')
-            ->get();
-
-        return response()->json($departamentos);
-    }
-
-    // 🔹 Listar ciudades por departamento
-    public function ciudades($idDepartamento)
-    {
-        $ciudades = Ciudad::where('FK_ID_Departamento', $idDepartamento)
-            ->orderBy('Nombre')
-            ->get();
-
-        return response()->json($ciudades);
+        $departamento = Departamento::findOrFail($id);
+        $departamento->delete();
+        return response()->json(['message' => 'Departamento eliminado correctamente']);
     }
 }

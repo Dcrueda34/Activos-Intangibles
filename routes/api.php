@@ -2,12 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 
-// ===== Controladores =====
+
+
+// ===== Controladores Admin =====
 use App\Http\Controllers\Admin\{
     AdminController,
     ConsultaController,
     DescargaController,
-    // DepartamentoController,
     DashboardController,
     EmpresaController,
     InversionController,
@@ -21,130 +22,132 @@ use App\Http\Controllers\Admin\{
     UbicacionController,
     UsuarioController,
     VinculacionController,
+    DepartamentoController, // ⚠️ Verificar que exista
+    CatalogoUbicacionController,
     ValoracionController
 };
 
-//esta en el modulo inversionista
-use App\Http\Controllers\inversionista;
-use App\Http\Controllers\InversionistaController;
-use App\Http\Controllers\Inversionista\ReporteInversionesController;
-use App\Http\Controllers\Inversionista\ReporteController;
-use App\Http\Controllers\Inversionista\DashboardController as InvDash;
-use App\Http\Controllers\Inversionista\LiquidacionController as InvLiquidacion;
+// ===== Controladores Inversionista =====
+use App\Http\Controllers\Inversionista\{
+    DashboardController as InvDash,
+    LiquidacionController as InvLiquidacion,
+    ReporteController,
+    ReporteInversionesController
+};
 
-// OJO: TipoInversionController NO está en Admin
-
-use App\Http\Controllers\Admin\DepartamentoController;
 // =====================================================
 // RUTA DE PRUEBA
 // =====================================================
 Route::get('/test', fn() => response()->json(['status' => 'API funcionando ✅']));
 
 // =====================================================
-// CRUDs PRINCIPALES (API Resources)
-// (cada apiResource ya define index, show, store, update, destroy)
-
+// RUTAS ADMIN - CRUD PRINCIPALES
 // =====================================================
-Route::apiResource('usuarios',        UsuarioController::class);
-Route::post('/proyectos', [App\Http\Controllers\Admin\ProyectoController::class, 'store']);
-Route::apiResource('proyectos', ProyectoController::class)
-    ->only(['index', 'store', 'update', 'destroy']);
-Route::get('proyectos/select', [\App\Http\Controllers\Admin\ProyectoController::class, 'select'])->name('api.proyectos.select');
 
+// Usuarios
+Route::apiResource('usuarios', UsuarioController::class);
+Route::post('usuarios/update-legacy', [UsuarioController::class, 'updateLegacy']);
 
-Route::apiResource('inversiones',     InversionController::class);
-Route::apiResource('empresas',        EmpresaController::class);
-Route::apiResource('paises',          PaisController::class);
-//Route::apiResource('departamentos',   DepartamentoController::class);// aun persiste el error de departamento
-Route::apiResource('municipios',      MunicipioController::class);
-Route::apiResource('tipos-inversion', TipoInversionController::class);
-Route::apiResource('tasas',           TasaController::class);
-Route::apiResource('ubicaciones',     UbicacionController::class);
-Route::apiResource('liquidaciones',   LiquidacionController::class);
-Route::apiResource('simulaciones',    SimulacionController::class);
-Route::apiResource('valoraciones', ValoracionController::class);
-Route::get('/inversiones', [InversionController::class, 'indexView'])->name('inversiones.index');
+// Empresas
+Route::apiResource('empresas', EmpresaController::class);
 
-
-// =====================================================
-// ACCIONES ESPECÍFICAS EN PROYECTOS / TIPOS
-// =====================================================
+// Proyectos
+Route::apiResource('proyectos', ProyectoController::class)->only(['index', 'store', 'update', 'destroy']);
+Route::get('proyectos/select', [ProyectoController::class, 'select'])->name('api.proyectos.select');
 Route::post('proyectos/{proyecto}/liquidar', [ProyectoController::class, 'liquidar']);
-Route::post('proyectos/{proyecto}/simular',  [ProyectoController::class, 'simular']);
+Route::post('proyectos/{proyecto}/simular', [ProyectoController::class, 'simular']);
+Route::delete('proyectos', [ProyectoController::class, 'destroyMany']);
+Route::post('/proyectos', [ProyectoController::class, 'store']);
+Route::get('/proyectos/{id}/descargar-certificado', [ProyectoController::class, 'descargarCertificado']);
 
-// =====================================================
-// DASHBOARD
-// =====================================================
-Route::get('dashboard/summary',          [DashboardController::class, 'summary']);
-Route::get('dashboard/proyectos-por-mes', [DashboardController::class, 'proyectosPorMes']);
+// Inversiones
+Route::delete('inversiones', [InversionController::class, 'destroyMany']);
+Route::get('inversiones/index-view', [InversionController::class, 'indexView'])->name('inversiones.index');
 
-// =====================================================
-// CONSULTAS Y CATÁLOGOS
-// =====================================================
-Route::get('consultas/usuarios',                        [ConsultaController::class, 'usuarios']);
-Route::get('consultas/proyectos-por-usuario/{usuario}', [ConsultaController::class, 'proyectosPorUsuario']);
-Route::get('consultas/resumen',                         [ConsultaController::class, 'resumen']);
-Route::get('consultas/busqueda',                        [ConsultaController::class, 'busqueda']);
+// Países / Departamentos / Municipios
+Route::apiResource('paises', PaisController::class);
+Route::apiResource('departamentos', DepartamentoController::class); // ⚠️ Verificar existencia
+Route::apiResource('municipios', MunicipioController::class);
+Route::post('municipios/update-legacy', [MunicipioController::class, 'updateLegacy']);
+Route::post('paises/update-legacy', [PaisController::class, 'updateLegacy']);
 
-Route::get('catalogos/proyectos-no-liquidados', [ConsultaController::class, 'proyectosNoLiquidados']);
-Route::get('catalogos/usuarios-para-vincular',  [ConsultaController::class, 'usuariosParaVincular']);
-Route::get('simulacion/resumen',                [SimulacionController::class, 'resumen']); // ?proyecto_id=123
-Route::get('tasas/ultima',                      [TasaController::class, 'ultima']);
-Route::post('/tasas', [TasaController::class, 'store']);
-Route::delete('/tasas/{id}', [TasaController::class, 'destroy']);
+// Tipos de inversión
+Route::apiResource('tipos-inversion', TipoInversionController::class);
+
+// Tasas
+Route::apiResource('tasas', TasaController::class);
+Route::get('tasas/ultima', [TasaController::class, 'ultima']);
+Route::get('/tasas/ultima', [ValoracionController::class, 'ultima']);
+Route::get('/valoracion', [ValoracionController::class, 'vista'])
+    ->name('valoracion.vista');
 
 
-// =====================================================
-// VINCULACIONES (pivot proyecto_usuario)
-// =====================================================
-// Listar vínculos con filtros ?proyecto=&usuario=
-Route::get('vinculaciones',    [VinculacionController::class, 'index']);
-// Sincronizar usuarios de un proyecto (body: { proyecto, usuarios:[] })
-Route::post('vinculaciones',   [VinculacionController::class, 'store']);
-// Eliminar un vínculo puntual (body: { proyecto, usuario })
+// Ubicaciones
+Route::apiResource('ubicaciones', UbicacionController::class);
+// Trae todos los países
+Route::get('ubicacion/paises', [PaisController::class, 'index']);
+
+// Trae departamentos según país
+Route::get('ubicacion/departamentos/{paisId}', [PaisController::class, 'departamentos']);
+
+// Trae municipios según departamento
+Route::get('ubicacion/municipios/{departamentoId}', [PaisController::class, 'municipios']);
+
+// Trae ciudades según municipio
+Route::get('ubicacion/ciudades/{municipioId}', [PaisController::class, 'ciudades']);
+
+
+// Liquidaciones
+Route::apiResource('liquidaciones', LiquidacionController::class);
+
+// Simulaciones
+Route::apiResource('simulaciones', SimulacionController::class);
+Route::get('simulacion/resumen', [SimulacionController::class, 'resumen']);
+
+// Valoraciones
+Route::post('/guardar', [ValoracionController::class, 'store'])->name('valoracion.datos_entrada');
+Route::get('/valoracion', [ValoracionController::class, 'index'])->name('valoracion.index');
+Route::get('/valoracion/{proyectoId}', [ValoracionController::class, 'vista'])->name('valoracion.vista');
+
+
+// Vinculaciones
+Route::get('vinculaciones', [VinculacionController::class, 'index']);
+Route::post('vinculaciones', [VinculacionController::class, 'store']);
 Route::delete('vinculaciones', [VinculacionController::class, 'destroy']);
 
-// =====================================================
-// REPORTES / GRÁFICOS
-// =====================================================
-//URoute::get('reportes/datos-line', [ReporteController::class, 'datosLine']);
+// Dashboard
+Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+Route::get('dashboard/proyectos-por-mes', [DashboardController::class, 'proyectosPorMes']);
 
-// =====================================================
-// DESCARGAS
-// =====================================================
+// Consultas y catálogos
+Route::get('consultas/usuarios', [ConsultaController::class, 'usuarios']);
+Route::get('consultas/proyectos-por-usuario/{usuario}', [ConsultaController::class, 'proyectosPorUsuario']);
+Route::get('consultas/resumen', [ConsultaController::class, 'resumen']);
+Route::get('consultas/busqueda', [ConsultaController::class, 'busqueda']);
+Route::get('catalogos/proyectos-no-liquidados', [ConsultaController::class, 'proyectosNoLiquidados']);
+Route::get('catalogos/usuarios-para-vincular', [ConsultaController::class, 'usuariosParaVincular']);
+Route::prefix('ubicacion')->group(function () {
+    Route::get('paises', [CatalogoUbicacionController::class, 'getPaises']);
+    Route::get('departamentos/{paisId}', [CatalogoUbicacionController::class, 'getDepartamentos']);
+    Route::get('municipios/{departamentoId}', [CatalogoUbicacionController::class, 'getMunicipios']);
+});
+// Descargas
 Route::get('descargas/{recurso}/{id}/certificado', [DescargaController::class, 'certificado'])
     ->whereIn('recurso', ['inversiones', 'proyectos']);
-
 Route::get('descargas/proyectos-liquidacion/{id}', [DescargaController::class, 'certificado'])
     ->defaults('recurso', 'proyectos-liquidacion');
-
-// Listados opcionales
 Route::get('descargas/inversiones', [DescargaController::class, 'inversiones'])->name('descargas.inversiones');
-Route::get('descargas/proyectos',   [DescargaController::class, 'proyectos'])->name('descargas.proyectos');
+Route::get('descargas/proyectos', [DescargaController::class, 'proyectos'])->name('descargas.proyectos');
 
 // =====================================================
-// OPERACIONES EN LOTE (opcional)
+// RUTAS INVERSIONISTA
 // =====================================================
-Route::delete('inversiones', [InversionController::class, 'destroyMany']);
-Route::delete('proyectos',   [ProyectoController::class,   'destroyMany']);
-// Si implementas más adelante:
-// Route::delete('departamentos', [DepartamentoController::class, 'destroyMany']);
-// Route::delete('paises',        [PaisController::class,        'destroyMany']);
-// Route::delete('municipios',    [MunicipioController::class,   'destroyMany']);
-
-// =====================================================
-// COMPATIBILIDAD LEGACY (opcionales)
-// =====================================================
-Route::post('usuarios/update-legacy',   [UsuarioController::class,   'updateLegacy']);
-Route::post('municipios/update-legacy', [MunicipioController::class, 'updateLegacy']);
-Route::post('paises/update-legacy',     [PaisController::class,      'updateLegacy']);
-
-
-//VALORACION
-
-Route::get('/valoracion/datos-entrada', [ValoracionController::class, 'datosEntrada'])
-    ->name('valoracion.datos_entrada');
-
+Route::prefix('inversionista')->group(function () {
+    Route::get('dashboard', [InvDash::class, 'index']);
+    Route::apiResource('liquidaciones', InvLiquidacion::class);
+    Route::get('reportes', [ReporteController::class, 'index']);
+    Route::get('reportes/inversiones', [ReporteInversionesController::class, 'index']);
+});
 
 // =====================================================
 // FALLBACK 404 JSON

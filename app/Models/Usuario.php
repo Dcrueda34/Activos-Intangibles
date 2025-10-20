@@ -2,17 +2,45 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Usuario extends Model
+class Usuario extends Authenticatable
 {
-    protected $table = 'usuario2';
-    protected $primaryKey = 'ID_Usuario';
-    public $timestamps = false;
+    use HasFactory;
 
-    // Si tu PK NO es autoincremental (cédula):
-    // public $incrementing = false;
-    // protected $keyType = 'int'; // o 'string'
+    protected $table = 'usuario2';        // Nombre real de la tabla
+    protected $primaryKey = 'ID_Usuario'; // Clave primaria
+    public $timestamps = false;           // No hay created_at / updated_at
 
-    protected $fillable = ['Nombre', 'Apellido', 'Telefono', 'Correo', 'Contraseña', 'FK_ID_Municipio'];
+    protected $fillable = [
+        'ID_Usuario',
+        'Nombre',
+        'Apellido',
+        'Telefono',
+        'Correo',
+        'Contraseña',
+        'Fecha',
+        'FK_ID_Municipio',
+        'FK_ID_Rol'
+    ];
+
+    protected $hidden = ['Contraseña'];
+
+    // Método requerido por Authenticatable (para autenticación)
+    public function getAuthPassword()
+    {
+        return $this->Contraseña;
+    }
+
+    // Relación con proyectos (ajústala si no existe esta tabla)
+    public function proyectos()
+    {
+        return $this->belongsToMany(
+            Proyecto::class,
+            'proyecto_usuario',
+            'FK_ID_Usuario',
+            'FK_ID_Proyecto'
+        );
+    }
 }

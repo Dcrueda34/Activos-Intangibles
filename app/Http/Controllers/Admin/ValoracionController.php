@@ -3,66 +3,39 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Valoracion;
 use Illuminate\Http\Request;
+use App\Models\Valoracion;
+use App\Models\Tasa;
 
 class ValoracionController extends Controller
 {
-    public function index()
+    // Mostrar la vista de valoración por proyecto
+    public function vista($proyectoId)
     {
-        $valoraciones = Valoracion::with('proyecto')->get();
-        return response()->json($valoraciones);
-    }
+        // Buscar la valoración asociada al proyecto
+        $valoracion = Valoracion::where('FK_ID_Proyecto', $proyectoId)->first();
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'FK_ID_Proyecto' => 'required|exists:proyecto,ID_Proyecto',
-            'nombre_producto' => 'nullable|string|max:255',
-            'cantidad_vender' => 'nullable|integer',
-            'politica_crecimiento' => 'nullable|numeric',
-            'politica_precios' => 'nullable|numeric',
-            'precio' => 'nullable|numeric',
-            'aumento_costos_anual' => 'nullable|numeric',
-            'mano_obra_directa' => 'nullable|numeric',
-            'mano_obra_destajo' => 'nullable|numeric',
-            'aumento_anual_mod_destajo' => 'nullable|numeric',
-            'pago_comision' => 'nullable|numeric',
-            'servicios_publicos' => 'nullable|numeric',
-            'inversion_maquinaria' => 'nullable|numeric',
-            'inversion_muebles' => 'nullable|numeric',
-            'inversion_vehiculos' => 'nullable|numeric',
-            'inversion_tecnologia' => 'nullable|numeric',
-            'porcentaje_aumento_gastos' => 'nullable|numeric',
-            'tasa_oportunidad' => 'nullable|numeric',
-        ]);
+        // Si no existe, dejarlo en null (o new Valoracion() si prefieres objeto)
+        if (!$valoracion) {
+            $valoracion = null;
+        }
 
-        $valoracion = Valoracion::create($data);
-        return response()->json($valoracion, 201);
-    }
+        // Valores por defecto (garantizan que las variables existan)
+        $valorProyectado  = 0;
+        $activosTangibles = 0;
+        $valorIntangibles = 0;
 
-    public function show($id)
-    {
-        $valoracion = Valoracion::with('proyecto')->findOrFail($id);
-        return response()->json($valoracion);
-    }
+        if ($valoracion) {
+            $valorProyectado  = ($valoracion->flujo_caja ?? 0) + ($valoracion->balance ?? 0);
+            $activosTangibles = $valoracion->activos_tangibles ?? 0;
+            $valorIntangibles = $valorProyectado + $activosTangibles;
+        }
 
-    public function update(Request $request, $id)
-    {
-        $valoracion = Valoracion::findOrFail($id);
-        $valoracion->update($request->all());
-        return response()->json($valoracion);
-    }
-
-    public function destroy($id)
-    {
-        $valoracion = Valoracion::findOrFail($id);
-        $valoracion->delete();
-        return response()->json(['message' => 'Valoración eliminada correctamente']);
-    }
-
-    public function datosEntrada()
-    {
-        return view('activosintangibles.valoracion.datos-entrada');
+        return view('valoracion.index', compact(
+            'valoracion',
+            'valorProyectado',
+            'activosTangibles',
+            'valorIntangibles'
+        ));
     }
 }

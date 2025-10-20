@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('admin.layouts.app')
 
 @section('title','Valoración Activos Intangibles')
 @section('page-title','Valoración de Activos Intangibles')
@@ -53,12 +53,36 @@
 
     <!-- 💰 Valoración activos intangibles -->
     <div class="tab-pane fade" id="valoracion" role="tabpanel">
-      <p class="text-muted">Aquí irá la tabla de valoración según el Excel (pendiente de construir).</p>
+        @include('valoracion.partials.activos_intangibles')
     </div>
 
-    <!-- 💵 Presupuesto de inversión -->
+    <!-- 💵 Presupuesto con subpestañas -->
     <div class="tab-pane fade" id="presupuesto" role="tabpanel">
-      <p class="text-muted">Aquí irá la tabla de presupuesto (pendiente de construir).</p>
+
+      <!-- Subpestañas de Presupuesto -->
+      <ul class="nav nav-pills mb-3" id="subTabsPresupuesto" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="operacion-tab" data-bs-toggle="pill" data-bs-target="#operacion" type="button" role="tab">Presupuesto de Operación</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="financiero-tab" data-bs-toggle="pill" data-bs-target="#financiero" type="button" role="tab">Presupuesto Financiero</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="inversiones-tab" data-bs-toggle="pill" data-bs-target="#inversiones" type="button" role="tab">Presupuesto de Inversiones</button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="subTabsPresupuestoContent">
+        <div class="tab-pane fade show active" id="operacion" role="tabpanel">
+       <p class="text-muted">Aquí irá presupuesto de financiero (pendiente de construir).</p>
+        </div>
+        <div class="tab-pane fade" id="financiero" role="tabpanel">
+          <p class="text-muted">Aquí irá presupuesto de financiero (pendiente de construir).</p>
+        </div>
+        <div class="tab-pane fade" id="inversiones" role="tabpanel">
+         <p class="text-muted">Aquí irá presupuesto de Inversiones(pendiente de construir).</p>
+        </div>
+      </div>
     </div>
 
     <!-- 🎯 Objetivo -->

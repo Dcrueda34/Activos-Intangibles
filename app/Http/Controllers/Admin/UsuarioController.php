@@ -3,156 +3,106 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Usuario2;
+use App\Models\Usuario;
+use App\Models\Rol;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class UsuarioController extends Controller
 {
     /**
-     * LISTAR usuarios
      * GET /api/usuarios
-     * Opcional: ?search=nombre
+     * Filtros: ?search=..., ?from=YYYY-MM-DD, ?to=YYYY-MM-DD, ?rol=ID, ?municipio=ID
      */
-    public function index(Request $request)
+    public function index(Request $r)
     {
-        $query = Usuario2::query();
+        $q = Usuario::query()->with(['municipio', 'rol']);
 
-        if ($request->filled('search')) {
-            $query->where('Nombre', 'like', '%' . $request->search . '%');
+        if ($r->filled('search')) {
+            $s = $r->string('search');
+            $q->where(function ($qq) use ($s) {
+                $qq->where('ID_Usuario', 'like', "%{$s}%")
+                    ->orWhere('Nombre', 'like', "%{$s}%")
+                    ->orWhere('Apellido', 'like', "%{$s}%")
+                    ->orWhere('Correo', 'like', "%{$s}%");
+            });
         }
+        if ($r->filled('from')) $q->whereDate('Fecha', '>=', $r->date('from'));
+        if ($r->filled('to'))   $q->whereDate('Fecha', '<=', $r->date('to'));
+        if ($r->filled('rol'))  $q->where('FK_ID_Rol', $r->input('rol'));
+        if ($r->filled('municipio')) $q->where('FK_ID_Municipio', $r->input('municipio'));
 
-        $usuarios = $query->paginate(10);
-
-        return response()->json($usuarios);
+        $per = (int) $r->input('per_page', 20);
+        return $q->orderByDesc('Fecha')->paginate($per);
     }
 
-    /**
-     * VER un usuario
-     * GET /api/usuarios/{usuario}
-     */
-    public function show(Usuario2 $usuario)
+    /** GET /api/usuarios/{usuario} */
+    public function show(Usuario $usuario)
     {
-        return response()->json($usuario);
+        return $usuario->load(['municipio', 'rol']);
     }
 
-    /**
-     * CREAR usuario
-     * POST /api/usuarios
-     */
+    /** POST /api/usuarios */
     public function store(Request $r)
     {
         $data = $r->validate([
-            'Nombre'           => 'required|string|max:150',
-            'Apellido'         => 'required|string|max:150',
-            'Telefono'         => 'required|string|max:50',
-            'Correo'           => 'required|string|email|max:190|unique:usuario2,Correo',
-            'Contraseña'       => 'required|string|min:6|max:190',
-            'FK_ID_Municipio'  => 'required|integer|exists:municipio,ID_Municipio',
+            'ID_Usuario'      => 'required|integer|unique:usuario2,ID_Usuario',
+            'Nombre'          => 'required|string|max:120',
+            'Apellido'        => 'required|string|max:120',
+            'Telefono'        => 'required|string|max:50',
+            'Correo'          => 'required|email|max:190|unique:usuario2,Correo',
+            'Contraseña'      => 'required|string|max:190',   // legacy (sin hash)
+            'Fecha'           => 'required|date',
+            'FK_ID_Municipio' => 'required|integer|exists:municipio,ID_Municipio',
+            'FK_ID_Rol'       => 'required|integer|exists:rol,ID_Rol',
         ]);
 
-        $data['Contraseña'] = Hash::make($data['Contraseña']);
-
-        $usuario = Usuario2::create($data);
+        $usuario = Usuario::create($data);
 
         return response()->json([
-            'message' => 'Usuario creado exitosamente.',
-            'data' => $usuario
+            'message' => 'Usuario creado correctamente.',
+            'data'    => $usuario->fresh()->load(['municipio', 'rol']),
         ], 201);
     }
 
-    /**
-     * ACTUALIZAR usuario
-     * PUT /api/usuarios/{usuario}
-     */
-    public function update(Request $r, Usuario2 $usuario)
+    /** PUT /api/usuarios/{usuario} */
+    public function update(Request $r, Usuario $usuario)
     {
         $data = $r->validate([
-            'Nombre'           => 'sometimes|required|string|max:150',
-            'Apellido'         => 'sometimes|required|string|max:150',
-            'Telefono'         => 'sometimes|required|string|max:50',
-            'Correo'           => [
-                'sometimes',
-                'required',
-                'string',
-                'email',
-                'max:190',
-                Rule::unique('usuario2', 'Correo')->ignore($usuario->ID_Usuario, 'ID_Usuario'),
-            ],
-            'Contraseña'       => 'nullable|string|min:6|max:190',
-            'FK_ID_Municipio'  => 'sometimes|required|integer|exists:municipio,ID_Municipio',
+            'Nombre'          => 'sometimes|required|string|max:120',
+            'Apellido'        => 'sometimes|required|string|max:120',
+            'Telefono'        => 'sometimes|required|string|max:50',
+            'Correo'          => 'sometimes|required|email|max:190|unique:usuario2,Correo,' . $usuario->ID_Usuario . ',ID_Usuario',
+            'Contraseña'      => 'sometimes|required|string|max:190',  // legacy
+            'Fecha'           => 'sometimes|required|date',
+            'FK_ID_Municipio' => 'sometimes|required|integer|exists:municipio,ID_Municipio',
+            'FK_ID_Rol'       => 'sometimes|required|integer|exists:rol,ID_Rol',
         ]);
-
-        if (!empty($data['Contraseña'])) {
-            $data['Contraseña'] = Hash::make($data['Contraseña']);
-        } else {
-            unset($data['Contraseña']);
-        }
 
         $usuario->update($data);
 
         return response()->json([
-            'message' => 'Usuario actualizado exitosamente.',
-            'data' => $usuario->fresh()
+            'message' => 'Usuario actualizado.',
+            'data'    => $usuario->fresh()->load(['municipio', 'rol']),
         ]);
     }
 
-    /**
-     * ELIMINAR usuario
-     * DELETE /api/usuarios/{usuario}
-     */
-    public function destroy(Usuario2 $usuario)
+    /** DELETE /api/usuarios/{usuario} */
+    public function destroy(Usuario $usuario)
     {
-        $tieneVinculos = DB::table('proyecto_usuario')
-            ->where('FK_ID_Usuario', $usuario->ID_Usuario)
-            ->exists();
-
-        if ($tieneVinculos) {
-            return response()->json([
-                'message' => 'El usuario no puede ser eliminado porque está vinculado a un proyecto/empresa.'
-            ], 409);
-        }
-
+        $id = $usuario->ID_Usuario;
         $usuario->delete();
 
         return response()->json([
-            'message' => 'Usuario eliminado exitosamente.',
-            'id' => $usuario->ID_Usuario
+            'message' => 'Usuario eliminado.',
+            'id'      => $id,
         ]);
     }
 
     /**
-     * ELIMINAR múltiples usuarios
-     * DELETE /api/usuarios (body: { "ids": [1,2,3] })
+     * Catálogo de roles para selects: GET /api/catalogos/roles
      */
-    public function destroyMany(Request $r)
+    public function rolesCatalogo()
     {
-        $data = $r->validate([
-            'ids'   => 'required|array|min:1',
-            'ids.*' => 'integer|exists:usuario2,ID_Usuario',
-        ]);
-
-        $ids = $data['ids'];
-
-        $vinculados = DB::table('proyecto_usuario')
-            ->whereIn('FK_ID_Usuario', $ids)
-            ->pluck('FK_ID_Usuario')
-            ->unique()
-            ->map(fn($v) => (int)$v)
-            ->all();
-
-        $eliminables = array_values(array_diff($ids, $vinculados));
-
-        if (!empty($eliminables)) {
-            DB::table('usuario2')->whereIn('ID_Usuario', $eliminables)->delete();
-        }
-
-        return response()->json([
-            'eliminados' => $eliminables,
-            'bloqueados' => $vinculados,
-            'message' => 'Operación completada.'
-        ]);
+        return Rol::orderBy('Nombre')->get(['ID_Rol', 'Nombre']);
     }
 }
